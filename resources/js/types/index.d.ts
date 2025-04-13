@@ -44,4 +44,32 @@ export interface Category {
     updated_at: string;
 }
 
+export interface Destination {
+    id: string;
+    name: string;
+    thumb_image: string;
+    content: string;
+    facility: string;
+    lat: number;
+    lon: number;
+    pic_id: number;
+    published: boolean;
+    created_at: string;
+    updated_at: string;
+    pic?: User;
+    categories?: Category[];
+    testimonials?: DestinationTestimonial[];
+}
+
+export interface DestinationTestimonial {
+    id: string;
+    destination_id: string;
+    user_id: number;
+    comment: string;
+    rating: number;
+    created_at: string;
+    updated_at: string;
+    user?: User;
+}
+
 export type BreadcrumbItemType = BreadcrumbItem;

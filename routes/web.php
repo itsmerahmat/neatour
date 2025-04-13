@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DestinationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,6 +17,9 @@ Route::get('dashboard', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('user', UserController::class);
 });
+
+// Destination routes
+Route::resource('destination', DestinationController::class)->middleware(['auth']);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Hanya daftarkan route yang digunakan oleh CategoryController
