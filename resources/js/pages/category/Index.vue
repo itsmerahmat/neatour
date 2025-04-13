@@ -26,8 +26,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ref, computed } from 'vue';
-// import { Toaster } from '@/components/ui/sonner';
+import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,17 +69,34 @@ function handleDelete() {
 const isDialogOpen = ref(false);
 const isEditing = ref(false);
 const selectedCategory = ref<Category | null>(null);
+const imagePreview = ref<string | null>(null);
 
 const form = useForm({
   name: '',
-  img: '',
+  img: null as File | null,
 });
+
+function handleFileChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    const file = target.files[0];
+    form.img = file;
+
+    // Generate image preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imagePreview.value = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+}
 
 function openCreateDialog() {
   form.reset();
   form.clearErrors();
   isEditing.value = false;
   selectedCategory.value = null;
+  imagePreview.value = null;
   isDialogOpen.value = true;
 }
 
@@ -88,17 +104,27 @@ function openEditDialog(category: Category) {
   form.reset();
   form.clearErrors();
   form.name = category.name;
-  form.img = category.img || '';
+  // Don't set form.img here since it's now a file input
   isEditing.value = true;
   selectedCategory.value = category;
+
+  // Set the existing image as preview if it exists
+  if (category.img) {
+    imagePreview.value = category.img;
+  } else {
+    imagePreview.value = null;
+  }
+
   isDialogOpen.value = true;
 }
 
 function handleSubmit() {
   if (isEditing.value && selectedCategory.value) {
-    form.put(`/category/${selectedCategory.value.id}`, {
+    // For edit, we need to use post with _method: 'put' for file uploads
+    form.post(`/category/${selectedCategory.value.id}?_method=PUT`, {
       onSuccess: () => {
         isDialogOpen.value = false;
+        imagePreview.value = null;
         toast.success('Kategori berhasil diperbarui', {
           description: 'Data kategori telah diperbarui dengan sukses'
         });
@@ -113,6 +139,7 @@ function handleSubmit() {
     form.post('/category', {
       onSuccess: () => {
         isDialogOpen.value = false;
+        imagePreview.value = null;
         toast.success('Kategori berhasil ditambahkan', {
           description: 'Kategori baru telah ditambahkan ke sistem'
         });
@@ -127,6 +154,13 @@ function handleSubmit() {
 }
 
 const dialogTitle = computed(() => isEditing.value ? 'Edit Kategori' : 'Tambah Kategori');
+
+// Reset image preview when dialog closes
+watch(isDialogOpen, (newValue) => {
+  if (!newValue) {
+    imagePreview.value = null;
+  }
+});
 </script>
 
 <template>
@@ -158,7 +192,7 @@ const dialogTitle = computed(() => isEditing.value ? 'Edit Kategori' : 'Tambah K
               <TableCell>{{ index + 1 }}</TableCell>
               <TableCell>{{ category.name }}</TableCell>
               <TableCell>
-                <img v-if="category.img" :src="category.img" class="h-8 w-8 object-cover rounded-md"
+                <img v-if="category.img" :src="category.img" class="h-10 w-10 object-cover rounded-md"
                   alt="Category image" />
                 <span v-else class="text-gray-400">No image</span>
               </TableCell>
@@ -202,11 +236,11 @@ const dialogTitle = computed(() => isEditing.value ? 'Edit Kategori' : 'Tambah K
 
     <!-- Dialog untuk form tambah/edit kategori -->
     <Dialog v-model:open="isDialogOpen">
-      <DialogContent class="sm:max-w-[425px]">
+      <DialogContent class="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{{ dialogTitle }}</DialogTitle>
           <DialogDescription>
-            Masukkan data kategori di bawah ini. Klik Simpan saat selesai.
+            Masukkan data kategori di bawah ini. Klik {{ isEditing ? 'Perbarui' : 'Simpan' }} saat selesai.
           </DialogDescription>
         </DialogHeader>
 
@@ -217,10 +251,20 @@ const dialogTitle = computed(() => isEditing.value ? 'Edit Kategori' : 'Tambah K
             <div v-if="form.errors.name" class="text-red-500 text-sm">{{ form.errors.name }}</div>
           </div>
 
-          <div class="space-y-2">
-            <Label for="img">URL Gambar</Label>
-            <Input id="img" v-model="form.img" type="text" placeholder="Masukkan URL gambar (opsional)" />
+          <div class="grid w-full items-center gap-2">
+            <Label for="img">Gambar Kategori</Label>
+            <Input id="img" type="file" accept="image/*" @change="handleFileChange" />
             <div v-if="form.errors.img" class="text-red-500 text-sm">{{ form.errors.img }}</div>
+
+            <!-- Image Preview -->
+            <div v-if="imagePreview" class="mt-2">
+              <p class="text-sm text-muted-foreground mb-2">Preview:</p>
+              <div class="flex justify-center items-center">
+                <div class="relative w-50 h-50 rounded-md border overflow-hidden">
+                  <img :src="imagePreview" class="w-full h-full object-cover" alt="Preview" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

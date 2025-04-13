@@ -6,6 +6,7 @@ use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
@@ -16,7 +17,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::all();
-        
+
         return Inertia::render('category/Index', [
             'categories' => $categories
         ]);
@@ -35,12 +36,15 @@ class CategoryController extends Controller
      */
     public function store(CategoryRequest $request)
     {
-        // $validated = $request->validate([
-        //     'name' => 'required|string|max:255|unique:categories',
-        //     'img' => 'nullable|string',
-        // ]);
+        $validated = $request->validated();
 
-        Category::create($request->validated());
+        // Handle file upload if image is present
+        if ($request->hasFile('img')) {
+            $path = $request->file('img')->store('categories', 'public');
+            $validated['img'] = Storage::url($path);
+        }
+
+        Category::create($validated);
 
         return redirect()->route('category.index')
             ->with('success', 'Kategori berhasil ditambahkan');
@@ -72,12 +76,21 @@ class CategoryController extends Controller
      */
     public function update(CategoryRequest $request, Category $category)
     {
-        // $validated = $request->validate([
-        //     'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-        //     'img' => 'nullable|string',
-        // ]);
+        $validated = $request->validated();
 
-        $category->update($request->validated());
+        // Handle file upload if image is present
+        if ($request->hasFile('img')) {
+            // Delete old image if exists
+            if ($category->img && Storage::exists(str_replace('/storage', 'public', $category->img))) {
+                Storage::delete(str_replace('/storage', 'public', $category->img));
+            }
+
+            // Save new image
+            $path = $request->file('img')->store('categories', 'public');
+            $validated['img'] = Storage::url($path);
+        }
+
+        $category->update($validated);
 
         return redirect()->route('category.index')
             ->with('success', 'Kategori berhasil diperbarui');
@@ -88,6 +101,11 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
+        // Delete image file if exists (TODO: not working)
+        if ($category->img && Storage::exists(str_replace('/storage/', 'public/', $category->img))) {
+            Storage::delete(str_replace('/storage', 'public', $category->img));
+        }
+
         $category->delete();
 
         return redirect()->route('category.index')
