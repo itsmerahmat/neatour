@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
 // import AppLayout from '@/layouts/app/AppHeaderLayout.vue';
 import type { BreadcrumbItemType } from '@/types';
+import { Toaster } from '@/components/ui/sonner';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
@@ -15,5 +16,7 @@ withDefaults(defineProps<Props>(), {
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <slot />
+        <!-- Komponen Toaster untuk menampilkan notifikasi -->
+        <Toaster />
     </AppLayout>
 </template>

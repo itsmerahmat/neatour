@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -24,22 +25,22 @@ class CategoryController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        return Inertia::render('category/Form');
-    }
+    // public function create()
+    // {
+    //     return Inertia::render('category/Form');
+    // }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CategoryRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories',
-            'img' => 'nullable|string',
-        ]);
+        // $validated = $request->validate([
+        //     'name' => 'required|string|max:255|unique:categories',
+        //     'img' => 'nullable|string',
+        // ]);
 
-        Category::create($validated);
+        Category::create($request->validated());
 
         return redirect()->route('category.index')
             ->with('success', 'Kategori berhasil ditambahkan');
@@ -48,35 +49,35 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Category $category)
-    {
-        return Inertia::render('category/Show', [
-            'category' => $category
-        ]);
-    }
+    // public function show(Category $category)
+    // {
+    //     return Inertia::render('category/Show', [
+    //         'category' => $category
+    //     ]);
+    // }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Category $category)
-    {
-        return Inertia::render('category/Form', [
-            'category' => $category,
-            'isEditing' => true
-        ]);
-    }
+    // public function edit(Category $category)
+    // {
+    //     return Inertia::render('category/Form', [
+    //         'category' => $category,
+    //         'isEditing' => true
+    //     ]);
+    // }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(CategoryRequest $request, Category $category)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'img' => 'nullable|string',
-        ]);
+        // $validated = $request->validate([
+        //     'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+        //     'img' => 'nullable|string',
+        // ]);
 
-        $category->update($validated);
+        $category->update($request->validated());
 
         return redirect()->route('category.index')
             ->with('success', 'Kategori berhasil diperbarui');
