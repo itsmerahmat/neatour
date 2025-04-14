@@ -72,4 +72,14 @@ export interface DestinationTestimonial {
     user?: User;
 }
 
+export interface Testimonial {
+    id: number;
+    destination_id: string;
+    comment: string;
+    rating: number;
+    created_at: string;
+    updated_at: string;
+    destination?: Destination;
+}
+
 export type BreadcrumbItemType = BreadcrumbItem;

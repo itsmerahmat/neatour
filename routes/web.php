@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DestinationController;
+use App\Http\Controllers\TestimonialController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -20,6 +21,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Destination routes
 Route::resource('destination', DestinationController::class)->middleware(['auth']);
+
+// Testimonial routes
+Route::resource('testimonial', TestimonialController::class)->middleware(['auth']);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Hanya daftarkan route yang digunakan oleh CategoryController

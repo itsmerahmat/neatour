@@ -12,7 +12,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { ComboboxAnchor, ComboboxContent, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxLabel, ComboboxRoot, ComboboxTrigger, ComboboxViewport, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText, TagsInputRoot } from 'reka-ui';
-import { X } from 'lucide-vue-next';
+import { ChevronDown, X } from 'lucide-vue-next';
 
 interface FormProps {
   destination?: Destination;
@@ -227,7 +227,7 @@ function getCategoryLabel(id: string): string {
                                         </TagsInputRoot>
 
                                         <ComboboxTrigger>
-                                            <X class="h-3.5 w-3.5" />
+                                             <ChevronDown class="h-3.5 w-3.5" />
                                         </ComboboxTrigger>
                                     </ComboboxAnchor>
 

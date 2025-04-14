@@ -41,6 +41,6 @@ class Destination extends Model
 
     public function testimonials(): HasMany
     {
-        return $this->hasMany(DestinationTestimonial::class);
+        return $this->hasMany(Testimonial::class);
     }
 }
