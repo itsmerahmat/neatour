@@ -13,6 +13,9 @@ import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { ComboboxAnchor, ComboboxContent, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxLabel, ComboboxRoot, ComboboxTrigger, ComboboxViewport, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText, TagsInputRoot } from 'reka-ui';
 import { ChevronDown, X } from 'lucide-vue-next';
+// Import VueQuill components
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 interface FormProps {
   destination?: Destination;
@@ -66,6 +69,21 @@ const form = useForm({
     categories: props.destination?.categories?.map(category => category.id) || [] as string[],
     _method: props.isEditing ? 'PUT' : 'POST',
 });
+
+// Define Quill editor options
+const quillOptions = {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            ['link', 'image'],
+            ['clean']
+        ]
+    },
+    placeholder: 'Masukkan deskripsi destinasi...'
+};
 
 const imagePreview = ref<string | null>(props.destination?.thumb_image || null);
 
@@ -268,7 +286,13 @@ function getCategoryLabel(id: string): string {
                         
                         <div class="space-y-2">
                             <Label for="content">Deskripsi</Label>
-                            <Textarea id="content" v-model="form.content" rows="5" placeholder="Masukkan deskripsi destinasi" />
+                            <!-- Replace Textarea with QuillEditor -->
+                            <QuillEditor 
+                                v-model:content="form.content" 
+                                :options="quillOptions"
+                                contentType="html"
+                                class="min-h-[200px]"
+                            />
                             <div v-if="form.errors.content" class="text-sm text-red-500">{{ form.errors.content }}</div>
                         </div>
 
@@ -319,3 +343,10 @@ function getCategoryLabel(id: string): string {
         </Card>
     </AppLayout>
 </template>
+
+<style>
+/* Add some styling for the Quill editor */
+.ql-editor {
+    min-height: 150px;
+}
+</style>
