@@ -16,19 +16,54 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FileUpload } from '@/components/ui/file-upload';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Category, type BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import { ChevronUp, ChevronDown, Search } from 'lucide-vue-next';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const props = defineProps({
+// Custom debounce function implementation
+function useDebounce<T extends (...args: any[]) => any>(fn: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    
+    return function(...args: Parameters<T>) {
+        if (timeout !== null) {
+            clearTimeout(timeout);
+        }
+        
+        timeout = setTimeout(() => {
+            fn(...args);
+            timeout = null;
+        }, wait);
+    };
+}
+
+// Props now include pagination, search, and sorting
+const props = defineProps<{
     categories: {
-        type: Array as () => Category[],
-        required: true,
-    },
-});
+        data: Category[];
+        links: any[];
+        meta: {
+            current_page: number;
+            from: number;
+            last_page: number;
+            links: any[];
+            path: string;
+            per_page: number;
+            to: number;
+            total: number;
+        }
+    };
+    filters: {
+        search: string;
+        perPage: number;
+        sortField: string;
+        sortDirection: string;
+    }
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -54,8 +89,78 @@ function handleDelete() {
                     description: 'Terjadi kesalahan saat menghapus kategori',
                 });
             },
+            preserveScroll: true,
         });
     }
+}
+
+// Server-side table functionality
+const search = ref(props.filters.search);
+const perPage = ref(props.filters.perPage.toString());
+const sortField = ref(props.filters.sortField);
+const sortDirection = ref(props.filters.sortDirection);
+
+const perPageOptions = [
+    { label: '10 per halaman', value: '10' },
+    { label: '25 per halaman', value: '25' },
+    { label: '50 per halaman', value: '50' },
+    { label: '100 per halaman', value: '100' },
+];
+
+// Using our custom debounce function instead of Lodash
+const performSearch = () => {
+    router.get('/category', {
+        search: search.value,
+        perPage: perPage.value,
+        sortField: sortField.value,
+        sortDirection: sortDirection.value,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+};
+const debouncedSearch = useDebounce(performSearch, 300);
+
+// Watch for search input changes
+watch(search, () => {
+    debouncedSearch();
+});
+
+// Handle per page change
+function handlePerPageChange(value: string) {
+    perPage.value = value;
+    router.get('/category', {
+        search: search.value,
+        perPage: perPage.value,
+        sortField: sortField.value,
+        sortDirection: sortDirection.value,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+}
+
+// Handle sorting
+function sort(field: string) {
+    sortDirection.value = field === sortField.value 
+        ? sortDirection.value === 'asc' 
+            ? 'desc' 
+            : 'asc'
+        : 'asc';
+    sortField.value = field;
+
+    router.get('/category', {
+        search: search.value,
+        perPage: perPage.value,
+        sortField: sortField.value,
+        sortDirection: sortDirection.value,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
 }
 
 // Handle form dialog functionality
@@ -68,21 +173,6 @@ const form = useForm({
     name: '',
     img: null as File | null,
 });
-
-function handleFileChange(e: Event) {
-    const target = e.target as HTMLInputElement;
-    if (target.files && target.files.length > 0) {
-        const file = target.files[0];
-        form.img = file;
-
-        // Generate image preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            imagePreview.value = e.target?.result as string;
-        };
-        reader.readAsDataURL(file);
-    }
-}
 
 function openCreateDialog() {
     form.reset();
@@ -97,7 +187,6 @@ function openEditDialog(category: Category) {
     form.reset();
     form.clearErrors();
     form.name = category.name;
-    // Don't set form.img here since it's now a file input
     isEditing.value = true;
     selectedCategory.value = category;
 
@@ -127,6 +216,7 @@ function handleSubmit() {
                     description: 'Terjadi kesalahan saat memperbarui data kategori',
                 });
             },
+            preserveScroll: true,
         });
     } else {
         form.post('/category', {
@@ -142,6 +232,7 @@ function handleSubmit() {
                     description: 'Terjadi kesalahan saat menambahkan kategori',
                 });
             },
+            preserveScroll: true,
         });
     }
 }
@@ -170,25 +261,55 @@ watch(isDialogOpen, (newValue) => {
                 <Button variant="default" @click="openCreateDialog">Tambah Kategori</Button>
             </CardHeader>
             <CardContent>
+                <!-- Search and per page controls -->
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0">
+                    <div class="relative w-full sm:w-64">
+                        <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                        <Input
+                            v-model="search"
+                            placeholder="Cari kategori..."
+                            class="pl-8 w-full"
+                        />
+                    </div>
+                    <div>
+                        <Select v-model="perPage" @update:modelValue="String(handlePerPageChange)">
+                            <SelectTrigger class="w-[180px]">
+                                <SelectValue placeholder="Pilih jumlah per halaman" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem v-for="option in perPageOptions" :key="option.value" :value="option.value">
+                                    {{ option.label }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>No</TableHead>
-                            <TableHead>Nama</TableHead>
+                            <TableHead class="w-12 text-center">No</TableHead>
+                            <TableHead @click="sort('name')" class="cursor-pointer">
+                                <div class="flex items-center">
+                                    Nama
+                                    <ChevronUp v-if="sortField === 'name' && sortDirection === 'asc'" class="h-4 w-4 ml-1" />
+                                    <ChevronDown v-else-if="sortField === 'name' && sortDirection === 'desc'" class="h-4 w-4 ml-1" />
+                                </div>
+                            </TableHead>
                             <TableHead>Gambar</TableHead>
-                            <TableHead>Aksi</TableHead>
+                            <TableHead class="text-right">Aksi</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="(category, index) in categories" :key="category.id">
-                            <TableCell>{{ index + 1 }}</TableCell>
+                        <TableRow v-for="(category, index) in categories?.data || []" :key="category.id">
+                            <TableCell class="text-center">{{ (categories?.meta?.from || 0) + index }}</TableCell>
                             <TableCell>{{ category.name }}</TableCell>
                             <TableCell>
                                 <img v-if="category.img" :src="category.img" class="h-10 w-10 rounded-md object-cover" alt="Category image" />
                                 <span v-else class="text-gray-400">No image</span>
                             </TableCell>
-                            <TableCell>
-                                <div class="flex space-x-2">
+                            <TableCell class="text-right">
+                                <div class="flex space-x-2 justify-end">
                                     <!-- Tombol edit untuk membuka dialog edit -->
                                     <Button variant="outline" size="sm" @click="openEditDialog(category)">Edit</Button>
 
@@ -212,11 +333,54 @@ watch(isDialogOpen, (newValue) => {
                                 </div>
                             </TableCell>
                         </TableRow>
+                        <TableRow v-if="!categories?.data?.length">
+                            <TableCell colspan="4" class="text-center py-8">
+                                Tidak ada data kategori yang ditemukan
+                            </TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
+                
+                <!-- Pagination controls - Added safety checks -->
+                <div v-if="categories?.meta?.last_page > 1" class="flex items-center justify-between border-t px-4 py-4 sm:px-6 mt-4">
+                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Menampilkan
+                                <span class="font-medium">{{ categories?.meta?.from || 0 }}</span>
+                                sampai
+                                <span class="font-medium">{{ categories?.meta?.to || 0 }}</span>
+                                dari
+                                <span class="font-medium">{{ categories?.meta?.total || 0 }}</span>
+                                kategori
+                            </p>
+                        </div>
+                        <div v-if="categories?.meta?.links">
+                            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                <Link
+                                    v-for="(link, i) in categories.meta.links"
+                                    :key="i"
+                                    v-if="link.url && i !== 0 && i !== categories.meta.links.length - 1"
+                                    :href="link.url"
+                                    :class="[
+                                        link.active 
+                                            ? 'z-10 bg-primary text-white focus-visible:outline-primary' 
+                                            : 'text-gray-900 hover:bg-gray-50 focus:outline-offset-0',
+                                        'relative inline-flex items-center px-4 py-2 text-sm font-medium focus:z-20'
+                                    ]"
+                                    preserve-scroll
+                                >
+                                    {{ link.label }}
+                                </Link>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
             </CardContent>
             <CardFooter class="flex justify-between">
-                <div class="text-muted-foreground text-sm">Menampilkan {{ categories.length }} kategori</div>
+                <div class="text-muted-foreground text-sm">
+                    Menampilkan {{ categories?.data?.length || 0 }} dari {{ categories?.meta?.total || 0 }} kategori
+                </div>
             </CardFooter>
         </Card>
 
@@ -237,21 +401,15 @@ watch(isDialogOpen, (newValue) => {
                         <div v-if="form.errors.name" class="text-sm text-red-500">{{ form.errors.name }}</div>
                     </div>
 
-                    <div class="grid w-full items-center gap-2">
-                        <Label for="img">Gambar Kategori</Label>
-                        <Input id="img" type="file" accept="image/*" @change="handleFileChange" />
-                        <div v-if="form.errors.img" class="text-sm text-red-500">{{ form.errors.img }}</div>
-
-                        <!-- Image Preview -->
-                        <div v-if="imagePreview" class="mt-2">
-                            <p class="text-muted-foreground mb-2 text-sm">Preview:</p>
-                            <div class="flex items-center justify-center">
-                                <div class="relative h-50 w-50 overflow-hidden rounded-md border">
-                                    <img :src="imagePreview" class="h-full w-full object-cover" alt="Preview" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <FileUpload
+                        id="img"
+                        v-model="form.img"
+                        label="Gambar Kategori"
+                        :existingPreview="imagePreview"
+                        accept="image/*"
+                        :error="form.errors.img"
+                        helpText="Unggah gambar untuk kategori (format: JPG, JPEG, PNG)"
+                    />
                 </div>
 
                 <DialogFooter>

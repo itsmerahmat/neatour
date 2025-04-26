@@ -14,22 +14,38 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::all();
-
+        // Get query parameters
+        $search = $request->input('search', '');
+        $perPage = $request->input('perPage', 10);
+        $sortField = $request->input('sortField', 'id');
+        $sortDirection = $request->input('sortDirection', 'desc');
+        
+        // Query builder with search
+        $query = Category::query();
+        
+        // Apply search if provided
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+        
+        // Apply sorting
+        $query->orderBy($sortField, $sortDirection);
+        
+        // Get paginated results
+        $categories = $query->paginate($perPage)->withQueryString();
+        
         return Inertia::render('category/Index', [
-            'categories' => $categories
+            'categories' => $categories,
+            'filters' => [
+                'search' => $search,
+                'perPage' => $perPage,
+                'sortField' => $sortField,
+                'sortDirection' => $sortDirection,
+            ],
         ]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    // public function create()
-    // {
-    //     return Inertia::render('category/Form');
-    // }
 
     /**
      * Store a newly created resource in storage.
@@ -49,27 +65,6 @@ class CategoryController extends Controller
         return redirect()->route('category.index')
             ->with('success', 'Kategori berhasil ditambahkan');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    // public function show(Category $category)
-    // {
-    //     return Inertia::render('category/Show', [
-    //         'category' => $category
-    //     ]);
-    // }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    // public function edit(Category $category)
-    // {
-    //     return Inertia::render('category/Form', [
-    //         'category' => $category,
-    //         'isEditing' => true
-    //     ]);
-    // }
 
     /**
      * Update the specified resource in storage.

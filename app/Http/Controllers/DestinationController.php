@@ -78,7 +78,7 @@ class DestinationController extends Controller
      */
     public function show(Destination $destination)
     {
-        $destination->load(['pic', 'categories', 'testimonials.user']);
+        $destination->load(['pic', 'categories']);
         
         return Inertia::render('destination/Show', [
             'destination' => $destination

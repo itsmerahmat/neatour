@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUpload } from '@/components/ui/file-upload';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Category, type Destination, type User } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -16,6 +17,10 @@ import { ChevronDown, X } from 'lucide-vue-next';
 // Import VueQuill components
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+
+// Import Vue Leaflet components
+import { LMap, LTileLayer, LMarker, LIcon } from "@vue-leaflet/vue-leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface FormProps {
   destination?: Destination;
@@ -62,13 +67,16 @@ const form = useForm({
     content: props.destination?.content || '',
     facility: props.destination?.facility || '',
     thumb_image: null as File | null,
-    lat: props.destination?.lat || 0,
-    lon: props.destination?.lon || 0,
+    lat: props.destination?.lat || -6.200000, // Default to Indonesia's approximate coordinates
+    lon: props.destination?.lon || 106.816666,
     pic_id: props.destination?.pic_id ? String(props.destination.pic_id) : '',
     published: props.destination?.published || false,
     categories: props.destination?.categories?.map(category => category.id) || [] as string[],
     _method: props.isEditing ? 'PUT' : 'POST',
 });
+
+// Initialize image preview from existing destination
+const imagePreview = ref<string | null>(props.destination?.thumb_image || null);
 
 // Define Quill editor options
 const quillOptions = {
@@ -85,32 +93,17 @@ const quillOptions = {
     placeholder: 'Masukkan deskripsi destinasi...'
 };
 
-const imagePreview = ref<string | null>(props.destination?.thumb_image || null);
-
-function handleFileChange(e: Event) {
-    const target = e.target as HTMLInputElement;
-    if (target.files && target.files.length > 0) {
-        const file = target.files[0];
-        form.thumb_image = file;
-
-        // Generate image preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            imagePreview.value = e.target?.result as string;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
 function handleSubmit() {
     const url = props.isEditing ? `/destination/${props.destination?.id}` : '/destination';
     form.post(url, {
+        // Process server-side validation errors
         onSuccess: () => {
             toast.success(successMessage.value, {
                 description: successDescription.value,
             });
         },
-        onError: () => {
+        onError: (errors) => {
+            console.error('Form errors:', errors);
             toast.error(errorMessage.value, {
                 description: errorDescription.value,
             });
@@ -152,6 +145,89 @@ function getCategoryLabel(id: string): string {
     const category = props.categories.find(cat => cat.id === Number(id));
     return category ? category.name : id;
 }
+
+// Vue Leaflet map implementation
+const zoom = ref(13);
+const center = ref([form.lat, form.lon]);
+const markerLatLng = ref([form.lat, form.lon]);
+const map = ref(null);
+
+// Fix Leaflet icon issue with webpack
+const leafletIcon = ref({
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41]
+});
+
+// Handle map click to update marker position
+function handleMapClick(e) {
+  const { lat, lng } = e.latlng;
+  markerLatLng.value = [lat, lng];
+  form.lat = lat;
+  form.lon = lng;
+}
+
+// Update marker position when form lat/lon changes
+watch([() => form.lat, () => form.lon], () => {
+  markerLatLng.value = [form.lat, form.lon];
+  center.value = [form.lat, form.lon];
+}, { deep: true });
+
+// Function to search for a location using Nominatim (OpenStreetMap's search API)
+const searchQuery = ref('');
+const searchLocation = () => {
+  if (!searchQuery.value) return;
+  
+  const query = encodeURIComponent(searchQuery.value);
+  
+  // Use Nominatim API (OpenStreetMap's free geocoding service)
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
+    headers: {
+      'Accept': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data && data.length > 0) {
+      const result = data[0];
+      const lat = parseFloat(result.lat);
+      const lon = parseFloat(result.lon);
+      
+      // Update form values
+      form.lat = lat;
+      form.lon = lon;
+      
+      // Update map and marker through reactivity
+      markerLatLng.value = [lat, lon];
+      center.value = [lat, lon];
+      zoom.value = 14;
+    } else {
+      toast.error('Lokasi tidak ditemukan', {
+        description: 'Coba cari dengan kata kunci yang lebih spesifik',
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error searching location:', error);
+    toast.error('Gagal mencari lokasi', {
+      description: 'Terjadi kesalahan saat mencari lokasi',
+    });
+  });
+};
+
+// Update marker position on drag end
+function onMarkerDragEnd(event) {
+  const marker = event.target;
+  const position = marker.getLatLng();
+  form.lat = position.lat;
+  form.lon = position.lng;
+  markerLatLng.value = [position.lat, position.lng];
+}
 </script>
 
 <template>
@@ -191,21 +267,16 @@ function getCategoryLabel(id: string): string {
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label for="thumb_image">Gambar Thumbnail</Label>
-                            <Input id="thumb_image" type="file" accept="image/*" @change="handleFileChange" />
-                            <div v-if="form.errors.thumb_image" class="text-sm text-red-500">{{ form.errors.thumb_image }}</div>
-
-                            <!-- Image Preview -->
-                            <div v-if="imagePreview" class="mt-2">
-                                <p class="text-muted-foreground mb-2 text-sm">Preview:</p>
-                                <div class="flex items-center justify-center">
-                                    <div class="relative h-40 w-60 overflow-hidden rounded-md border">
-                                        <img :src="imagePreview" class="h-full w-full object-cover" alt="Preview" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Replace FilePond with our FileUpload component -->
+                        <FileUpload
+                            id="thumb_image"
+                            v-model="form.thumb_image"
+                            label="Gambar Thumbnail"
+                            :existingPreview="imagePreview"
+                            accept="image/png,image/jpeg,image/jpg"
+                            :error="form.errors.thumb_image"
+                            helpText="Unggah gambar untuk destinasi (format: JPG, JPEG, PNG, maks. 5MB)"
+                        />
 
                         <div class="space-y-2">
                             <Label for="categories">Kategori</Label>
@@ -286,7 +357,6 @@ function getCategoryLabel(id: string): string {
                         
                         <div class="space-y-2">
                             <Label for="content">Deskripsi</Label>
-                            <!-- Replace Textarea with QuillEditor -->
                             <QuillEditor 
                                 v-model:content="form.content" 
                                 :options="quillOptions"
@@ -307,16 +377,75 @@ function getCategoryLabel(id: string): string {
                     <div class="space-y-4">
                         <h3 class="font-medium text-lg">Lokasi</h3>
                         
+                        <!-- Location search -->
+                        <div class="space-y-2">
+                            <Label for="location-search">Cari Lokasi</Label>
+                            <div class="flex space-x-2">
+                                <Input 
+                                    id="location-search"
+                                    v-model="searchQuery"
+                                    type="text" 
+                                    placeholder="Cari lokasi (contoh: Malioboro, Yogyakarta)"
+                                    @keydown.enter.prevent="searchLocation"
+                                />
+                                <Button type="button" @click="searchLocation" variant="secondary">Cari</Button>
+                            </div>
+                        </div>
+
+                        <!-- Vue Leaflet map -->
+                        <div class="space-y-2">
+                            <div class="w-full h-[400px] rounded-lg border border-gray-300">
+                                <LMap
+                                    ref="map"
+                                    v-model:zoom="zoom"
+                                    v-model:center="center"
+                                    :use-global-leaflet="false"
+                                    @click="handleMapClick"
+                                    class="h-full w-full rounded-lg z-0"
+                                >
+                                    <LTileLayer
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        layer-type="base"
+                                        name="OpenStreetMap"
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    />
+                                    <LMarker
+                                        :lat-lng="markerLatLng"
+                                        draggable
+                                        @dragend="onMarkerDragEnd"
+                                    >
+                                        <LIcon :icon-url="leafletIcon.iconUrl" :shadow-url="leafletIcon.shadowUrl" />
+                                    </LMarker>
+                                </LMap>
+                            </div>
+                            <p class="text-sm text-muted-foreground">
+                                Klik pada peta untuk menandai lokasi atau seret pin untuk menyesuaikan posisi
+                            </p>
+                        </div>
+
+                        <!-- Coordinate inputs -->
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="lat">Latitude</Label>
-                                <Input id="lat" v-model="form.lat" type="number" step="any" placeholder="Contoh: -7.797068" />
+                                <Input 
+                                    id="lat" 
+                                    v-model="form.lat" 
+                                    type="number" 
+                                    step="any" 
+                                    placeholder="Contoh: -7.797068" 
+                                />
                                 <div v-if="form.errors.lat" class="text-sm text-red-500">{{ form.errors.lat }}</div>
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="lon">Longitude</Label>
-                                <Input id="lon" v-model="form.lon" type="number" step="any" placeholder="Contoh: 110.370529" />
+                                <Input 
+                                    id="lon" 
+                                    v-model="form.lon" 
+                                    type="number" 
+                                    step="any" 
+                                    placeholder="Contoh: 110.370529" 
+                                />
                                 <div v-if="form.errors.lon" class="text-sm text-red-500">{{ form.errors.lon }}</div>
                             </div>
                         </div>
@@ -348,5 +477,35 @@ function getCategoryLabel(id: string): string {
 /* Add some styling for the Quill editor */
 .ql-editor {
     min-height: 150px;
+}
+
+/* Vue Leaflet custom styling */
+.leaflet-container {
+    font-family: inherit;
+}
+
+.leaflet-popup-content {
+    font-size: 14px;
+    padding: 8px;
+}
+
+.leaflet-control-zoom {
+    border: none !important;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.2) !important;
+}
+
+.leaflet-control-zoom a {
+    border-radius: 4px !important;
+    background-color: white !important;
+    color: #333 !important;
+}
+
+.leaflet-control-attribution {
+    font-size: 10px !important;
+}
+
+.leaflet-div-icon {
+    background: transparent;
+    border: none;
 }
 </style>
