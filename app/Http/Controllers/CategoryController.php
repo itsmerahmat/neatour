@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
+use App\Traits\DataTableTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -11,39 +12,32 @@ use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+    use DataTableTrait;
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        // Get query parameters
-        $search = $request->input('search', '');
-        $perPage = $request->input('perPage', 10);
-        $sortField = $request->input('sortField', 'id');
-        $sortDirection = $request->input('sortDirection', 'desc');
+        // Define searchable columns
+        $searchableColumns = ['name'];
         
-        // Query builder with search
-        $query = Category::query();
+        // Define allowed sort fields
+        $allowedSortFields = ['id', 'name', 'created_at', 'updated_at'];
         
-        // Apply search if provided
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
-        }
-        
-        // Apply sorting
-        $query->orderBy($sortField, $sortDirection);
-        
-        // Get paginated results
-        $categories = $query->paginate($perPage)->withQueryString();
+        // Process DataTable request
+        $result = $this->processDataTable(
+            $request,
+            Category::query(),
+            $searchableColumns,
+            $allowedSortFields,
+            'id',
+            'desc'
+        );
         
         return Inertia::render('category/Index', [
-            'categories' => $categories,
-            'filters' => [
-                'search' => $search,
-                'perPage' => $perPage,
-                'sortField' => $sortField,
-                'sortDirection' => $sortDirection,
-            ],
+            'categories' => $result['data'],
+            'filters' => $result['filters'],
         ]);
     }
 

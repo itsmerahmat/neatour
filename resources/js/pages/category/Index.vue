@@ -11,35 +11,19 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileUpload } from '@/components/ui/file-upload';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Category, type BreadcrumbItem } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
-import { ChevronUp, ChevronDown, Search } from 'lucide-vue-next';
 
-// Custom debounce function implementation
-function useDebounce<T extends (...args: any[]) => any>(fn: T, wait: number) {
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-    
-    return function(...args: Parameters<T>) {
-        if (timeout !== null) {
-            clearTimeout(timeout);
-        }
-        
-        timeout = setTimeout(() => {
-            fn(...args);
-            timeout = null;
-        }, wait);
-    };
-}
+// Import the DataTable component
+import { DataTable } from '@/components/datatable';
 
 // Props now include pagination, search, and sorting
 const props = defineProps<{
@@ -73,6 +57,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Define table columns
+const columns = [
+    { key: 'id', label: 'No', class: 'w-12 text-center', sortable: false },
+    { key: 'name', label: 'Nama', sortable: true },
+    { key: 'img', label: 'Gambar', sortable: false },
+];
+
 // Handle delete functionality
 const categoryToDelete = ref<number | null>(null);
 
@@ -93,76 +84,6 @@ function handleDelete() {
             preserveScroll: true,
         });
     }
-}
-
-// Server-side table functionality
-const search = ref(props.filters.search);
-const perPage = ref(props.filters.perPage.toString());
-const sortField = ref(props.filters.sortField);
-const sortDirection = ref(props.filters.sortDirection);
-
-const perPageOptions = [
-    { label: '10 per halaman', value: '10' },
-    { label: '25 per halaman', value: '25' },
-    { label: '50 per halaman', value: '50' },
-    { label: '100 per halaman', value: '100' },
-];
-
-// Using our custom debounce function instead of Lodash
-const performSearch = () => {
-    router.get('/category', {
-        search: search.value,
-        perPage: perPage.value,
-        sortField: sortField.value,
-        sortDirection: sortDirection.value,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-    });
-};
-const debouncedSearch = useDebounce(performSearch, 300);
-
-// Watch for search input changes
-watch(search, () => {
-    debouncedSearch();
-});
-
-// Handle per page change
-function handlePerPageChange(value: string | null) {
-    if (value === null) return;
-    perPage.value = value;
-    router.get('/category', {
-        search: search.value,
-        perPage: perPage.value,
-        sortField: sortField.value,
-        sortDirection: sortDirection.value,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-    });
-}
-
-// Handle sorting
-function sort(field: string) {
-    sortDirection.value = field === sortField.value 
-        ? sortDirection.value === 'asc' 
-            ? 'desc' 
-            : 'asc'
-        : 'asc';
-    sortField.value = field;
-
-    router.get('/category', {
-        search: search.value,
-        perPage: perPage.value,
-        sortField: sortField.value,
-        sortDirection: sortDirection.value,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-    });
 }
 
 // Handle form dialog functionality
@@ -239,6 +160,15 @@ function handleSubmit() {
     }
 }
 
+// Handle row actions from DataTable
+function handleRowAction({ action, row }: { action: string; row: Category }) {
+    if (action === 'edit') {
+        openEditDialog(row);
+    } else if (action === 'delete') {
+        categoryToDelete.value = row.id;
+    }
+}
+
 const dialogTitle = computed(() => (isEditing.value ? 'Edit Kategori' : 'Tambah Kategori'));
 
 // Reset image preview when dialog closes
@@ -247,7 +177,6 @@ watch(isDialogOpen, (newValue) => {
         imagePreview.value = null;
     }
 });
-
 </script>
 
 <template>
@@ -264,122 +193,61 @@ watch(isDialogOpen, (newValue) => {
                 <Button variant="default" @click="openCreateDialog">Tambah Kategori</Button>
             </CardHeader>
             <CardContent>
-                <!-- Search and per page controls -->
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0">
-                    <div class="relative w-full sm:w-64">
-                        <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                        <Input
-                            v-model="search"
-                            placeholder="Cari kategori..."
-                            class="pl-8 w-full"
-                        />
-                    </div>
-                    <div>
-                        <Select v-model="perPage" @update:modelValue="(val) => handlePerPageChange(val as string)">                            <SelectTrigger class="w-[180px]">
-                                <SelectValue placeholder="Pilih jumlah per halaman" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem v-for="option in perPageOptions" :key="option.value" :value="option.value">
-                                    {{ option.label }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead class="w-12 text-center">No</TableHead>
-                            <TableHead @click="sort('name')" class="cursor-pointer">
-                                <div class="flex items-center">
-                                    Nama
-                                    <ChevronUp v-if="sortField === 'name' && sortDirection === 'asc'" class="h-4 w-4 ml-1" />
-                                    <ChevronDown v-else-if="sortField === 'name' && sortDirection === 'desc'" class="h-4 w-4 ml-1" />
-                                </div>
-                            </TableHead>
-                            <TableHead>Gambar</TableHead>
-                            <TableHead>Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(category, index) in categories?.data || []" :key="category.id">
-                            <TableCell class="text-center">{{ (categories?.from || 0) + index }}</TableCell>
-                            <TableCell>{{ category.name }}</TableCell>
-                            <TableCell>
-                                <img v-if="category.img" :src="category.img" class="h-10 w-10 rounded-md object-cover" alt="Category image" />
-                                <span v-else class="text-gray-400">No image</span>
-                            </TableCell>
-                            <TableCell class="text-right">
-                                <div class="flex space-x-2">
-                                    <!-- Tombol edit untuk membuka dialog edit -->
-                                    <Button variant="outline" size="sm" @click="openEditDialog(category)">Edit</Button>
+                <!-- Use the DataTable component -->
+                <DataTable
+                    route="/category"
+                    :data="categories"
+                    :columns="columns"
+                    :filters="filters"
+                    :searchable=true
+                    search-placeholder="Cari kategori..."
+                    @row-action="handleRowAction"
+                >
+                    <!-- Custom cell rendering for specific columns -->
+                    <template #cell="{ column, row, index }">
+                        <!-- Custom rendering for ID column -->
+                        <template v-if="column.key === 'id'">
+                            {{ (categories?.from || 0) + index }}
+                        </template>
+                        
+                        <!-- Custom rendering for image column -->
+                        <template v-else-if="column.key === 'img'">
+                            <img v-if="row.img" :src="row.img" class="h-10 w-10 rounded-md object-cover" alt="Category image" />
+                            <span v-else class="text-gray-400">No image</span>
+                        </template>
+                    </template>
+                    
+                    <!-- Actions slot for buttons -->
+                    <template #actions="{ row }">
+                        <div class="flex space-x-2">
+                            <!-- Edit button -->
+                            <Button variant="outline" size="sm" @click="openEditDialog(row)">Edit</Button>
 
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm" @click="categoryToDelete = category.id"> Hapus </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Tindakan ini tidak dapat dibatalkan. Ini akan menghapus kategori secara permanen dari database.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel @click="categoryToDelete = null">Batal</AlertDialogCancel>
-                                                <AlertDialogAction @click="handleDelete">Hapus</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow v-if="!categories?.data?.length">
-                            <TableCell colspan="4" class="text-center py-8">
-                                Tidak ada data kategori yang ditemukan
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-                
+                            <!-- Delete button with confirmation -->
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm" @click="categoryToDelete = row.id">
+                                        Hapus
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Tindakan ini tidak dapat dibatalkan. Ini akan menghapus kategori secara permanen dari database.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel @click="categoryToDelete = null">Batal</AlertDialogCancel>
+                                        <AlertDialogAction @click="handleDelete">Hapus</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </template>
+
+                </DataTable>
             </CardContent>
-            <CardFooter class="flex justify-between">
-                <!-- Pagination controls - Disesuaikan dengan format pagination Laravel -->
-                <div v-if="categories?.data?.length > 0" class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Menampilkan
-                            <span class="font-medium">{{ categories?.from || 0 }}</span>
-                            sampai
-                            <span class="font-medium">{{ categories?.to || 0 }}</span>
-                            dari
-                            <span class="font-medium">{{ categories?.total || 0 }}</span>
-                            kategori
-                        </p>
-                    </div>
-                    <div v-if="categories?.links && categories.links.length > 2">
-                        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                            <Link
-                                v-for="(link, i) in categories.links"
-                                :key="i"
-                                :href="link.url || '#'"
-                                :class="[
-                                    link.active 
-                                        ? 'z-10 bg-primary text-white focus-visible:outline-primary' 
-                                        : link.url
-                                            ? 'text-gray-900 hover:bg-gray-50 focus:outline-offset-0'
-                                            : 'text-gray-400 pointer-events-none',
-                                    'relative inline-flex items-center px-4 py-2 text-sm font-medium focus:z-20'
-                                ]"
-                                preserve-scroll
-                            >
-                                <span v-html="link.label"></span>
-                            </Link>
-                        </nav>
-                    </div>
-                </div>
-            </CardFooter>
         </Card>
 
         <!-- Dialog untuk form tambah/edit kategori -->
