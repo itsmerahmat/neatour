@@ -44,18 +44,19 @@ function useDebounce<T extends (...args: any[]) => any>(fn: T, wait: number) {
 // Props now include pagination, search, and sorting
 const props = defineProps<{
     categories: {
+        current_page: number;
         data: Category[];
-        links: any[];
-        meta: {
-            current_page: number;
-            from: number;
-            last_page: number;
-            links: any[];
-            path: string;
-            per_page: number;
-            to: number;
-            total: number;
-        }
+        from: number;
+        last_page: number;
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
     };
     filters: {
         search: string;
@@ -128,7 +129,8 @@ watch(search, () => {
 });
 
 // Handle per page change
-function handlePerPageChange(value: string) {
+function handlePerPageChange(value: string | null) {
+    if (value === null) return;
     perPage.value = value;
     router.get('/category', {
         search: search.value,
@@ -245,6 +247,7 @@ watch(isDialogOpen, (newValue) => {
         imagePreview.value = null;
     }
 });
+
 </script>
 
 <template>
@@ -272,8 +275,7 @@ watch(isDialogOpen, (newValue) => {
                         />
                     </div>
                     <div>
-                        <Select v-model="perPage" @update:modelValue="String(handlePerPageChange)">
-                            <SelectTrigger class="w-[180px]">
+                        <Select v-model="perPage" @update:modelValue="(val) => handlePerPageChange(val as string)">                            <SelectTrigger class="w-[180px]">
                                 <SelectValue placeholder="Pilih jumlah per halaman" />
                             </SelectTrigger>
                             <SelectContent>
@@ -297,19 +299,19 @@ watch(isDialogOpen, (newValue) => {
                                 </div>
                             </TableHead>
                             <TableHead>Gambar</TableHead>
-                            <TableHead class="text-right">Aksi</TableHead>
+                            <TableHead>Aksi</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <TableRow v-for="(category, index) in categories?.data || []" :key="category.id">
-                            <TableCell class="text-center">{{ (categories?.meta?.from || 0) + index }}</TableCell>
+                            <TableCell class="text-center">{{ (categories?.from || 0) + index }}</TableCell>
                             <TableCell>{{ category.name }}</TableCell>
                             <TableCell>
                                 <img v-if="category.img" :src="category.img" class="h-10 w-10 rounded-md object-cover" alt="Category image" />
                                 <span v-else class="text-gray-400">No image</span>
                             </TableCell>
                             <TableCell class="text-right">
-                                <div class="flex space-x-2 justify-end">
+                                <div class="flex space-x-2">
                                     <!-- Tombol edit untuk membuka dialog edit -->
                                     <Button variant="outline" size="sm" @click="openEditDialog(category)">Edit</Button>
 
@@ -341,45 +343,41 @@ watch(isDialogOpen, (newValue) => {
                     </TableBody>
                 </Table>
                 
-                <!-- Pagination controls - Added safety checks -->
-                <div v-if="categories?.meta?.last_page > 1" class="flex items-center justify-between border-t px-4 py-4 sm:px-6 mt-4">
-                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-sm text-gray-700">
-                                Menampilkan
-                                <span class="font-medium">{{ categories?.meta?.from || 0 }}</span>
-                                sampai
-                                <span class="font-medium">{{ categories?.meta?.to || 0 }}</span>
-                                dari
-                                <span class="font-medium">{{ categories?.meta?.total || 0 }}</span>
-                                kategori
-                            </p>
-                        </div>
-                        <div v-if="categories?.meta?.links">
-                            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                                <Link
-                                    v-for="(link, i) in categories.meta.links"
-                                    :key="i"
-                                    v-if="link.url && i !== 0 && i !== categories.meta.links.length - 1"
-                                    :href="link.url"
-                                    :class="[
-                                        link.active 
-                                            ? 'z-10 bg-primary text-white focus-visible:outline-primary' 
-                                            : 'text-gray-900 hover:bg-gray-50 focus:outline-offset-0',
-                                        'relative inline-flex items-center px-4 py-2 text-sm font-medium focus:z-20'
-                                    ]"
-                                    preserve-scroll
-                                >
-                                    {{ link.label }}
-                                </Link>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
             </CardContent>
             <CardFooter class="flex justify-between">
-                <div class="text-muted-foreground text-sm">
-                    Menampilkan {{ categories?.data?.length || 0 }} dari {{ categories?.meta?.total || 0 }} kategori
+                <!-- Pagination controls - Disesuaikan dengan format pagination Laravel -->
+                <div v-if="categories?.data?.length > 0" class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Menampilkan
+                            <span class="font-medium">{{ categories?.from || 0 }}</span>
+                            sampai
+                            <span class="font-medium">{{ categories?.to || 0 }}</span>
+                            dari
+                            <span class="font-medium">{{ categories?.total || 0 }}</span>
+                            kategori
+                        </p>
+                    </div>
+                    <div v-if="categories?.links && categories.links.length > 2">
+                        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                            <Link
+                                v-for="(link, i) in categories.links"
+                                :key="i"
+                                :href="link.url || '#'"
+                                :class="[
+                                    link.active 
+                                        ? 'z-10 bg-primary text-white focus-visible:outline-primary' 
+                                        : link.url
+                                            ? 'text-gray-900 hover:bg-gray-50 focus:outline-offset-0'
+                                            : 'text-gray-400 pointer-events-none',
+                                    'relative inline-flex items-center px-4 py-2 text-sm font-medium focus:z-20'
+                                ]"
+                                preserve-scroll
+                            >
+                                <span v-html="link.label"></span>
+                            </Link>
+                        </nav>
+                    </div>
                 </div>
             </CardFooter>
         </Card>

@@ -98,9 +98,17 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
-        // Check if the category has an image and delete it (TODO: not working)
-        if ($category->img && Storage::exists(str_replace('/storage', 'public', $category->img))) {
-            Storage::delete(str_replace('/storage', 'public', $category->img));
+        // Check if the category has an image and delete it
+        if ($category->img) {
+            // Convert the URL path to storage path
+            $path = str_replace('/storage/', 'public/', $category->img);
+            
+            // Check if file exists and delete it
+            if (Storage::exists($path)) {
+                Storage::delete($path);
+            } else {
+                Log::warning("Could not find image to delete: {$category->img}");
+            }
         }
 
         // Delete the category
