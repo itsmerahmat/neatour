@@ -26,6 +26,7 @@ import { toast } from 'vue-sonner';
 import { DataTable } from '@/components/datatable';
 
 // Props now include pagination, search, and sorting
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps<{
     categories: {
         current_page: number;

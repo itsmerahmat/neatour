@@ -11,11 +11,10 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { User, type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -23,19 +22,46 @@ import { Eye, EyeOff } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
+// Import DataTable component
+import { DataTable } from '@/components/datatable';
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const props = defineProps({
+const props = defineProps<{
     users: {
-        type: Array as () => User[],
-        required: true,
-    },
-});
+        current_page: number;
+        data: User[];
+        from: number;
+        last_page: number;
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
+    };
+    filters: {
+        search: string;
+        perPage: number;
+        sortField: string;
+        sortDirection: string;
+    }
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'User',
         href: '/user',
     },
+];
+
+// Define table columns
+const columns = [
+    { key: 'id', label: 'No', class: 'w-12 text-center', sortable: false },
+    { key: 'name', label: 'Nama', sortable: true },
+    { key: 'email', label: 'Email', sortable: true },
 ];
 
 // Handle delete functionality
@@ -61,6 +87,7 @@ function handleDelete() {
                     description: 'Terjadi kesalahan saat menghapus user',
                 });
             },
+            preserveScroll: true,
         });
     }
 }
@@ -109,6 +136,7 @@ function handleSubmit() {
                     description: 'Terjadi kesalahan saat memperbarui data user',
                 });
             },
+            preserveScroll: true,
         });
     } else {        
         form.post('/user', {
@@ -123,7 +151,17 @@ function handleSubmit() {
                     description: 'Terjadi kesalahan saat menambahkan user',
                 });
             },
+            preserveScroll: true,
         });
+    }
+}
+
+// Handle row actions from DataTable
+function handleRowAction({ action, row }: { action: string; row: User }) {
+    if (action === 'edit') {
+        openEditDialog(row);
+    } else if (action === 'delete') {
+        userToDelete.value = row.id;
     }
 }
 
@@ -144,51 +182,54 @@ const dialogTitle = computed(() => (isEditing.value ? 'Edit User' : 'Tambah User
                 <Button variant="default" @click="openCreateDialog">Tambah User</Button>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>No</TableHead>
-                            <TableHead>Nama</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(user, index) in users" :key="user.id">
-                            <TableCell>{{ index + 1 }}</TableCell>
-                            <TableCell>{{ user.name }}</TableCell>
-                            <TableCell>{{ user.email }}</TableCell>
-                            <TableCell>
-                                <div class="flex space-x-2">
-                                    <!-- Tombol edit untuk membuka dialog edit -->
-                                    <Button variant="outline" size="sm" @click="openEditDialog(user)">Edit</Button>
+                <!-- Use DataTable component instead of Table -->
+                <DataTable
+                    route="/user"
+                    :data="users"
+                    :columns="columns"
+                    :filters="filters"
+                    :searchable=true
+                    search-placeholder="Cari user..."
+                    @row-action="handleRowAction"
+                >
+                    <!-- Custom cell rendering for specific columns -->
+                    <template #cell="{ column, index }">
+                        <!-- Custom rendering for ID column -->
+                        <template v-if="column.key === 'id'">
+                            {{ index + 1 }}
+                        </template>
+                    </template>
+                    
+                    <!-- Actions slot for buttons -->
+                    <template #actions="{ row }">
+                        <div class="flex space-x-2">
+                            <!-- Edit button -->
+                            <Button variant="outline" size="sm" @click="openEditDialog(row)">Edit</Button>
 
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm" @click="userToDelete = user.id"> Hapus </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Tindakan ini tidak dapat dibatalkan. Ini akan menghapus user secara permanen dari database.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel @click="userToDelete = null">Batal</AlertDialogCancel>
-                                                <AlertDialogAction @click="handleDelete">Hapus</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+                            <!-- Delete button with confirmation -->
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm" @click="userToDelete = row.id">
+                                        Hapus
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Tindakan ini tidak dapat dibatalkan. Ini akan menghapus user secara permanen dari database.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel @click="userToDelete = null">Batal</AlertDialogCancel>
+                                        <AlertDialogAction @click="handleDelete">Hapus</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </template>
+                </DataTable>
             </CardContent>
-            <CardFooter class="flex justify-between">
-                <div class="text-muted-foreground text-sm">Menampilkan {{ users.length }} user</div>
-            </CardFooter>
         </Card>
 
         <!-- Dialog untuk form tambah/edit user -->

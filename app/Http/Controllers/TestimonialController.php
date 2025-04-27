@@ -4,21 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Models\Testimonial;
 use App\Models\Destination;
+use App\Traits\DataTableTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class TestimonialController extends Controller
 {
+    use DataTableTrait;
+    
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $testimonials = Testimonial::with('destination')->latest()->get();
+        // Define searchable columns
+        $searchableColumns = ['comment', 'rating'];
+        
+        // Define allowed sort fields
+        $allowedSortFields = ['id', 'destination_id', 'comment', 'rating', 'created_at', 'updated_at'];
+        
+        // Process DataTable request with eager loading
+        $result = $this->processDataTable(
+            $request,
+            Testimonial::with('destination'),
+            $searchableColumns,
+            $allowedSortFields,
+            'id',
+            'desc'
+        );
         
         return Inertia::render('testimonial/Index', [
-            'testimonials' => $testimonials
+            'testimonials' => $result['data'],
+            'filters' => $result['filters'],
         ]);
     }
 

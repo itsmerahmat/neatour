@@ -5,21 +5,39 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Destination;
 use App\Models\User;
+use App\Traits\DataTableTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class DestinationController extends Controller
 {
+    use DataTableTrait;
+    
     /**
      * Display a listing of the destinations.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $destinations = Destination::with(['pic', 'categories'])->get();
+        // Define searchable columns
+        $searchableColumns = ['name', 'content', 'facility'];
+        
+        // Define allowed sort fields
+        $allowedSortFields = ['id', 'name', 'pic_id', 'published', 'created_at', 'updated_at'];
+        
+        // Process DataTable request with eager loading
+        $result = $this->processDataTable(
+            $request,
+            Destination::with(['pic', 'categories']),
+            $searchableColumns,
+            $allowedSortFields,
+            'id',
+            'desc'
+        );
         
         return Inertia::render('destination/Index', [
-            'destinations' => $destinations
+            'destinations' => $result['data'],
+            'filters' => $result['filters'],
         ]);
     }
 

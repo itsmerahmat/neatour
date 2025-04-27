@@ -10,29 +10,58 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Destination, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { ref } from 'vue';
+
+// Import DataTable component
+import { DataTable } from '@/components/datatable';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const props = defineProps({
+const props = defineProps<{
     destinations: {
-        type: Array as () => Destination[],
-        required: true,
-    },
-});
+        current_page: number;
+        data: Destination[];
+        from: number;
+        last_page: number;
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
+    };
+    filters: {
+        search: string;
+        perPage: number;
+        sortField: string;
+        sortDirection: string;
+    }
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Destination',
         href: '/destination',
     },
+];
+
+// Define table columns
+const columns = [
+    { key: 'id', label: 'No', class: 'w-12 text-center', sortable: false },
+    { key: 'name', label: 'Nama Destinasi', sortable: true },
+    { key: 'pic', label: 'PIC', sortable: true },
+    // { key: 'categories', label: 'Kategori', sortable: false },
+    { key: 'published', label: 'Status', sortable: true },
+    { key: 'thumb_image', label: 'Gambar', sortable: false },
 ];
 
 // Handle delete functionality
@@ -52,22 +81,26 @@ function handleDelete() {
                     description: 'Terjadi kesalahan saat menghapus destinasi',
                 });
             },
+            preserveScroll: true,
         });
     }
 }
 
-function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('id-ID', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-    }).format(date);
+// Handle row actions from DataTable
+function handleRowAction({ action, row }: { action: string; row: Destination }) {
+    if (action === 'view') {
+        router.visit(`/destination/${row.id}`);
+    } else if (action === 'edit') {
+        router.visit(`/destination/${row.id}/edit`);
+    } else if (action === 'delete') {
+        destinationToDelete.value = row.id;
+    }
 }
+
 </script>
 
 <template>
-    <Head title="Destinations" />
+    <Head title="Destination" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <Card class="m-4">
             <CardHeader class="flex flex-row items-center justify-between">
@@ -76,88 +109,97 @@ function formatDate(dateString: string): string {
                     <CardDescription>Kelola destinasi wisata di sini</CardDescription>
                 </div>
 
-                <!-- Tombol untuk halaman tambah destinasi -->
-                <Link href="/destination/create">
-                    <Button variant="default">Tambah Destinasi</Button>
-                </Link>
+                <!-- Tombol untuk menambahkan destinasi baru -->
+                <Button variant="default" as-child>
+                    <Link href="/destination/create">Tambah Destinasi</Link>
+                </Button>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>No</TableHead>
-                            <TableHead>Nama</TableHead>
-                            <TableHead>Gambar</TableHead>
-                            <TableHead>Kategori</TableHead>
-                            <TableHead>PIC</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(destination, index) in destinations" :key="destination.id">
-                            <TableCell>{{ index + 1 }}</TableCell>
-                            <TableCell>{{ destination.name }}</TableCell>
-                            <TableCell>
-                                <img v-if="destination.thumb_image" :src="destination.thumb_image" class="h-12 w-20 rounded-md object-cover" alt="Destination thumbnail" />
-                                <span v-else class="text-gray-400">No image</span>
-                            </TableCell>
-                            <TableCell>
-                                <div class="flex flex-wrap gap-1">
-                                    <Badge v-for="category in destination.categories" :key="category.id" variant="secondary">
-                                        {{ category.name }}
-                                    </Badge>
-                                    <span v-if="!destination.categories || destination.categories.length === 0" class="text-gray-400">No categories</span>
-                                </div>
-                            </TableCell>
-                            <TableCell>{{ destination.pic?.name || 'N/A' }}</TableCell>
-                            <TableCell>
-                                <Badge :variant="destination.published ? 'default' : 'secondary'">
-                                    {{ destination.published ? 'Published' : 'Draft' }}
+                <!-- Use DataTable component instead of Table -->
+                <DataTable
+                    route="/destination"
+                    :data="destinations"
+                    :columns="columns"
+                    :filters="filters"
+                    :searchable=true
+                    search-placeholder="Cari destinasi..."
+                    @row-action="handleRowAction"
+                >
+                    <!-- Custom cell rendering for specific columns -->
+                    <template #cell="{ column, row, index }">
+                        <!-- Custom rendering for ID column -->
+                        <template v-if="column.key === 'id'">
+                            {{ index + 1 }}
+                        </template>
+
+                        <!-- Custom rendering for pic.name column -->
+                        <template v-else-if="column.key === 'pic'">
+                            {{ row.pic ? row.pic.name : 'Tidak ada PIC' }}
+                        </template>
+
+                        <!-- Custom rendering for categories column -->
+                        <template v-else-if="column.key === 'categories'">
+                            <div class="flex flex-wrap gap-1">
+                                <Badge v-for="category in row.categories" :key="category.id" variant="outline" class="mr-1">
+                                    {{ category.name }}
                                 </Badge>
-                            </TableCell>
-                            <TableCell>
-                                <div class="flex space-x-2">
-                                    <Link :href="`/destination/${destination.id}`">
-                                        <Button variant="outline" size="icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
-                                        </Button>
-                                    </Link>
+                                <span v-if="!row.categories || row.categories.length === 0" class="text-gray-400">
+                                    Tidak ada kategori
+                                </span>
+                            </div>
+                        </template>
 
-                                    <Link :href="`/destination/${destination.id}/edit`">
-                                        <Button variant="outline" size="icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-                                        </Button>
-                                    </Link>
+                        <!-- Custom rendering for published column -->
+                        <template v-else-if="column.key === 'published'">
+                            <Badge :variant="row.published ? 'default' : 'secondary'">
+                                {{ row.published ? 'Published' : 'Draft' }}
+                            </Badge>
+                        </template>
 
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="icon" @click="destinationToDelete = destination.id">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Tindakan ini tidak dapat dibatalkan. Ini akan menghapus destinasi secara permanen dari database.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel @click="destinationToDelete = null">Batal</AlertDialogCancel>
-                                                <AlertDialogAction @click="handleDelete">Hapus</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+                        <!-- Custom rendering for image column -->
+                        <template v-else-if="column.key === 'thumb_image'">
+                            <img v-if="row.thumb_image" :src="row.thumb_image" class="h-10 w-10 rounded-md object-cover" alt="Thumbnail" />
+                            <span v-else class="text-gray-400">No image</span>
+                        </template>
+                    </template>
+                    
+                    <!-- Actions slot for buttons -->
+                    <template #actions="{ row }">
+                        <div class="flex space-x-2">
+                            <!-- View button -->
+                            <Button variant="outline" size="sm" as-child>
+                                <Link :href="`/destination/${row.id}`">Lihat</Link>
+                            </Button>
+
+                            <!-- Edit button -->
+                            <Button variant="outline" size="sm" as-child>
+                                <Link :href="`/destination/${row.id}/edit`">Edit</Link>
+                            </Button>
+
+                            <!-- Delete button with confirmation -->
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm" @click="destinationToDelete = row.id">
+                                        Hapus
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Tindakan ini tidak dapat dibatalkan. Ini akan menghapus destinasi secara permanen dari database.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel @click="destinationToDelete = null">Batal</AlertDialogCancel>
+                                        <AlertDialogAction @click="handleDelete">Hapus</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </template>
+                </DataTable>
             </CardContent>
-            <CardFooter class="flex justify-between">
-                <div class="text-muted-foreground text-sm">Menampilkan {{ destinations.length }} destinasi</div>
-            </CardFooter>
         </Card>
     </AppLayout>
 </template>
