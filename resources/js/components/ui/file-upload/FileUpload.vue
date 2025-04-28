@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { Input } from '../input';
-import { Label } from '../label';
 
 interface FileUploadProps {
-  label?: string;
-  id?: string;
   modelValue: File | null;
   existingPreview?: string | null;
   accept?: string;
@@ -14,8 +11,6 @@ interface FileUploadProps {
 }
 
 const props = withDefaults(defineProps<FileUploadProps>(), {
-  label: 'Upload File',
-  id: 'file-upload',
   accept: 'image/*',
   existingPreview: null,
   error: '',
@@ -54,9 +49,7 @@ function handleFileChange(e: Event) {
 </script>
 
 <template>
-  <div class="space-y-2">
-    <Label :for="id" v-if="label">{{ label }}</Label>
-    <Input :id="id" type="file" :accept="accept" @change="handleFileChange" />
+    <Input type="file" :accept="accept" @change="handleFileChange" />
     <p v-if="helpText" class="text-sm text-muted-foreground">{{ helpText }}</p>
     <div v-if="error" class="text-sm text-red-500">{{ error }}</div>
 
@@ -69,5 +62,4 @@ function handleFileChange(e: Event) {
         </div>
       </div>
     </div>
-  </div>
 </template>

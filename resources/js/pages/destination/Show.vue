@@ -72,7 +72,7 @@ function formatDate(dateString: string): string {
                         </CardHeader>
                         <CardContent>
                             <div class="prose max-w-none">
-                                <p class="whitespace-pre-line">{{ destination.content }}</p>
+                                <div v-html="destination.content"></div>
                             </div>
                         </CardContent>
                     </Card>

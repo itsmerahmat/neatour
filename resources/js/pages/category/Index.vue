@@ -268,15 +268,16 @@ watch(isDialogOpen, (newValue) => {
                         <div v-if="form.errors.name" class="text-sm text-red-500">{{ form.errors.name }}</div>
                     </div>
 
-                    <FileUpload
-                        id="img"
-                        v-model="form.img"
-                        label="Gambar Kategori"
-                        :existingPreview="imagePreview"
-                        accept="image/*"
-                        :error="form.errors.img"
-                        helpText="Unggah gambar untuk kategori (format: JPG, JPEG, PNG)"
-                    />
+                    <div class="space-y-2">
+                        <Label for="img">Gambar Kategori</Label>
+                        <FileUpload
+                            v-model="form.img"
+                            :existingPreview="imagePreview"
+                            accept="image/*"
+                            :error="form.errors.img"
+                            helpText="Unggah gambar untuk kategori (format: JPG, JPEG, PNG)"
+                        />
+                    </div>
                 </div>
 
                 <DialogFooter>
