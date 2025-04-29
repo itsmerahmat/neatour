@@ -36,12 +36,12 @@ onBeforeUnmount(() => {
 
 <template>
     <header
-        class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center py-4 px-4 md:px-8 w-full transition-all duration-300"
+        class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center py-4 px-5 md:px-8 w-full transition-all duration-300"
         :class="[
             isScrolled ? 'bg-white shadow-md' : 'bg-white',
         ]">
         <!-- <div class="container max-w-6xl mx-auto flex justify-between items-center"> -->
-        <div class="container max-w-4/5 mx-auto flex justify-between items-center">
+        <div class="container lg:max-w-4/5 mx-auto flex justify-between items-center">
             <Link href="/" class="h-8 md:h-12">
                 <img src="/images/logo/logo.png" alt="NeaTour Logo" class="h-full" />
             </Link>
