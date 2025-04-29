@@ -23,10 +23,41 @@ class HomeController extends Controller
         // Fetch testimonials
         $testimonials = Testimonial::all();
         
-        return Inertia::render('Home', [
+        return Inertia::render('landing/Home', [
             'nearbyDestinations' => $nearbyDestinations,
             'categories' => $categories,
             'testimonials' => $testimonials,
+        ]);
+    }
+    
+    /**
+     * Display detailed information about a specific destination.
+     *
+     * @param string $id
+     * @return \Inertia\Response
+     */
+    public function show($id)
+    {
+        // Find the destination with related data
+        $destination = Destination::with(['categories', 'testimonials'])
+            ->findOrFail($id);
+        
+        // Get testimonials for this destination
+        $testimonials = Testimonial::where('destination_id', $id)->get();
+        
+        // Get related destinations based on categories (limit 3)
+        $categoryIds = $destination->categories->pluck('id');
+        $relatedDestinations = Destination::whereHas('categories', function($query) use ($categoryIds) {
+                $query->whereIn('category_id', $categoryIds);
+            })
+            ->where('id', '!=', $id) // Exclude the current destination
+            ->limit(3)
+            ->get();
+        
+        return Inertia::render('landing/DetailKatalog', [
+            'destination' => $destination,
+            'testimonials' => $testimonials,
+            'relatedDestinations' => $relatedDestinations,
         ]);
     }
 }

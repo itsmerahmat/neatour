@@ -4,7 +4,7 @@
 <template>
     <!-- Footer -->
     <footer class="bg-[#638C6D] py-8 px-8 text-white mt-auto">
-        <div class="container max-w-6xl mx-auto">
+        <div class="container max-w-4/5 mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
                 <div class="">
                     <img src="/images/logo/logo_nea.png" alt="NeaTour" class="h-full filter" />
