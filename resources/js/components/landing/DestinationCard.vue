@@ -43,7 +43,7 @@ defineProps({
     </div>
     <h3 class="text-2xl font-semibold p-4 text-[#33372C] group-hover:text-[#DF6D2D]">{{ name }}</h3>
     <div class="flex items-center gap-3 px-4 pb-4">
-      <img src="/images/icons/location.svg" alt="Location" class="w-6 h-6" />
+      <img src="/images/icons/location-primary.svg" alt="Location" class="w-6 h-6" />
       <span class="text-xl text-[#565950]">{{ distance }}</span>
     </div>
   </Link>

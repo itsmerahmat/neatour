@@ -2,6 +2,7 @@
 import { Category, Destination, Testimonial } from '@/types';
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import Footer from '@/components/landing/Footer.vue';
 import FeatureCard from '@/components/landing/FeatureCard.vue';
 import Navbar from '@/components/landing/Navbar.vue';
@@ -221,11 +222,10 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-8 md:mt-12">
-                    <button
-                        class="flex items-center gap-2 md:gap-4 px-4 md:px-6 py-2 md:py-3 bg-[#DF6D2D] text-white text-xl md:text-2xl lg:text-3xl font-semibold rounded-full">
+                    <Link href="/katalog" class="flex items-center gap-4 px-6 py-3 bg-[#DF6D2D] text-white text-3xl font-semibold rounded-full">
                         <span>Lihat Lebih Banyak</span>
-                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
-                    </button>
+                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-8 h-8" />
+                    </Link>
                 </div>
             </div>
         </section>

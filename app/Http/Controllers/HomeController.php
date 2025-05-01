@@ -10,7 +10,7 @@ use Inertia\Inertia;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function home()
     {
         // Fetch nearby destinations (limit 3)
         $nearbyDestinations = Destination::with('categories')
@@ -24,6 +24,26 @@ class HomeController extends Controller
         $testimonials = Testimonial::all();
         
         return Inertia::render('landing/Home', [
+            'nearbyDestinations' => $nearbyDestinations,
+            'categories' => $categories,
+            'testimonials' => $testimonials,
+        ]);
+    }
+
+    public function katalog()
+    {
+        // Fetch nearby destinations (limit 3)
+        $nearbyDestinations = Destination::with('categories')
+            ->limit(3)
+            ->get();
+        
+        // Fetch featured categories
+        $categories = Category::limit(4)->get();
+        
+        // Fetch testimonials
+        $testimonials = Testimonial::all();
+        
+        return Inertia::render('landing/Katalog', [
             'nearbyDestinations' => $nearbyDestinations,
             'categories' => $categories,
             'testimonials' => $testimonials,
@@ -44,6 +64,11 @@ class HomeController extends Controller
         
         // Get testimonials for this destination
         $testimonials = Testimonial::where('destination_id', $id)->get();
+
+        // Fetch nearby destinations (limit 3)
+        $nearbyDestinations = Destination::with('categories')
+            ->limit(3)
+            ->get();
         
         // Get related destinations based on categories (limit 3)
         $categoryIds = $destination->categories->pluck('id');
@@ -55,6 +80,7 @@ class HomeController extends Controller
             ->get();
         
         return Inertia::render('landing/DetailKatalog', [
+            'nearbyDestinations' => $nearbyDestinations,
             'destination' => $destination,
             'testimonials' => $testimonials,
             'relatedDestinations' => $relatedDestinations,
