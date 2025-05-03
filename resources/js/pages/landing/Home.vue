@@ -102,9 +102,9 @@ onMounted(() => {
         <Navbar />
 
         <!-- Hero Section with Carousel -->
-        <section class="pb-8 md:pb-12 lg:pb-16 px-5 md:px-8 mt-2">
+        <section class="pb-6 md:pb-8 lg:pb-12 px-4 md:px-6 mt-2">
             <div 
-                class="container lg:max-w-4/5 mx-auto relative min-h-[500px] md:min-h-[700px] lg:min-h-[800px] flex flex-col bg-cover bg-center rounded-2xl overflow-hidden transition-all duration-500 ease-in-out" 
+                class="container lg:max-w-4/5 mx-auto relative min-h-[400px] md:min-h-[500px] lg:min-h-[600px] flex flex-col bg-cover bg-center rounded-2xl overflow-hidden transition-all duration-500 ease-in-out" 
                 :style="{
                     backgroundImage: `url('${
                         nearbyDestinations[currentSlide]?.thumb_image || defaultBgImage
@@ -113,21 +113,20 @@ onMounted(() => {
             >
                 <div class="absolute inset-0 bg-black/30 rounded-2xl"></div>
 
-                <div class="relative z-10 flex flex-col gap-4 flex-grow p-6 md:p-10 lg:p-16">
+                <div class="relative z-10 flex flex-col gap-3 flex-grow p-5 md:p-8 lg:p-12">
                     <div class="max-w-full md:max-w-7xl">
-                        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-semibold leading-tight text-white mb-3 md:mb-6">
-                            <!-- {{ nearbyDestinations[currentSlide]?.name || "Jelajahi Keindahan Alam yang Ada di Sekitarmu !" }} -->
+                        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold leading-tight text-white mb-2 md:mb-4">
                             Jelajahi Keindahan Alam yang Ada di Sekitarmu !
                         </h1>
-                        <p class="text-lg md:text-xl lg:text-2xl leading-relaxed text-white mb-4 md:mb-8 max-w-3xl">
+                        <p class="text-base md:text-lg lg:text-xl leading-relaxed text-white mb-3 md:mb-6 max-w-3xl">
                             Temukan destinasi wisata alam terbaik, panduan lengkap,
                             dan pengalaman tak terlupakan di satu tempat.
                         </p>
-                        <div class="flex flex-wrap gap-3 md:gap-4">
-                            <button class="px-4 py-2 font-semibold text-base md:text-xl lg:text-2xl bg-[#DF6D2D] text-white rounded-full">
+                        <div class="flex flex-wrap gap-2 md:gap-3">
+                            <button class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg bg-[#DF6D2D] text-white rounded-full">
                                 Mulai Petualanganmu
                             </button>
-                            <button class="px-4 py-2 font-semibold text-base md:text-xl lg:text-2xl border border-white text-white rounded-full">
+                            <button class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg border border-white text-white rounded-full">
                                 Rekomendasi Wisata
                             </button>
                         </div>
@@ -135,23 +134,23 @@ onMounted(() => {
 
                     <div class="flex justify-between items-center mt-auto">
                         <!-- carousel navigation buttons -->
-                        <div class="flex justify-start gap-2 md:gap-3">
+                        <div class="flex justify-start gap-2">
                             <button class="bg-transparent border-none cursor-pointer" @click="prevSlide">
-                                <img src="/images/icons/arrow-circle-left.svg" alt="Previous" class="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12" />
+                                <img src="/images/icons/arrow-circle-left.svg" alt="Previous" class="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
                             </button>
                             <button class="bg-transparent border-none cursor-pointer" @click="nextSlide">
-                                <img src="/images/icons/arrow-circle-right.svg" alt="Next" class="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12" />
+                                <img src="/images/icons/arrow-circle-right.svg" alt="Next" class="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
                             </button>
                         </div>
                         
                         <!-- carousel indicators -->
-                        <div class="flex gap-2">
+                        <div class="flex gap-1.5">
                             <button 
                                 v-for="(_, index) in nearbyDestinations" 
                                 :key="index" 
                                 @click="currentSlide = index"
-                                class="w-2 h-2 md:w-3 md:h-3 rounded-full bg-white opacity-50 transition-opacity duration-300"
-                                :class="{ 'opacity-100 w-4 md:w-6': currentSlide === index }"
+                                class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white opacity-50 transition-opacity duration-300"
+                                :class="{ 'opacity-100 w-3 md:w-4': currentSlide === index }"
                             ></button>
                         </div>
                     </div>
@@ -160,18 +159,18 @@ onMounted(() => {
         </section>
 
         <!-- Features Section -->
-        <section class="py-8 md:py-12 lg:pb-16 px-5 md:px-8">
+        <section class="py-6 md:py-8 lg:pb-12 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
-                <div class="text-center mx-auto mb-8 md:mb-12 lg:mb-16 max-w-4xl">
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold mb-3 md:mb-6 text-[#33372C]">
+                <div class="text-center mx-auto mb-6 md:mb-8 lg:mb-10 max-w-4xl">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-2 md:mb-4 text-[#33372C]">
                         Kenapa Harus NeaTour?
                     </h2>
-                    <p class="text-lg md:text-xl lg:text-2xl text-[#898B85]">
+                    <p class="text-base md:text-lg lg:text-xl text-[#898B85]">
                         Temukan pengalaman wisata alam terbaik dengan fitur lengkap yang memudahkan perjalananmu!
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     <!-- Feature 1 -->
                     <FeatureCard 
                         title="Temukan Destinasi Wisata di Sekitarmu"
@@ -201,15 +200,15 @@ onMounted(() => {
         </section>
 
         <!-- Nearby Destinations Section -->
-        <section class="py-8 md:py-12 lg:pb-16 px-5 md:px-8">
+        <section class="py-6 md:py-8 lg:pb-12 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
-                <div class="text-center mb-8 md:mb-12 lg:mb-16">
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-[#33372C]">
+                <div class="text-center mb-6 md:mb-8 lg:mb-10">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-[#33372C]">
                         Temukan Wisata Terdekat !
                     </h2>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-8">
                     <DestinationCard 
                         v-for="destination in nearbyDestinations" 
                         :key="destination.id"
@@ -221,10 +220,10 @@ onMounted(() => {
                     />
                 </div>
 
-                <div class="flex justify-center mt-8 md:mt-12">
-                    <Link href="/katalog" class="flex items-center gap-4 px-6 py-3 bg-[#DF6D2D] text-white text-3xl font-semibold rounded-full">
+                <div class="flex justify-center mt-6 md:mt-8">
+                    <Link href="/katalog" class="flex items-center gap-2 md:gap-3 px-4 py-2 md:py-2.5 bg-[#DF6D2D] text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full">
                         <span>Lihat Lebih Banyak</span>
-                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-8 h-8" />
+                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-6 h-6 md:w-7 md:h-7" />
                     </Link>
                 </div>
             </div>

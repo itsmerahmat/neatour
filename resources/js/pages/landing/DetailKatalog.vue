@@ -88,62 +88,62 @@ const facilities = computed(() => {
         <Navbar activePage="catalog" />
 
         <!-- Main Content -->
-        <section class="py-8 md:py-12 lg:pb-16 px-5 md:px-8">
+        <section class="py-6 md:py-8 lg:py-10 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
                 <!-- Destination Header Section -->
-                <div class="flex flex-col lg:flex-row gap-6">
+                <div class="flex flex-col lg:flex-row gap-4 md:gap-5">
                     <!-- Main Image -->
-                    <div class="w-full lg:w-1/2 rounded-3xl overflow-hidden h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
-                        <img :src="destinationData.thumb_image" alt="Destination" class="w-full h-full object-cover rounded-3xl">
+                    <div class="w-full lg:w-1/2 rounded-2xl overflow-hidden h-[250px] sm:h-[320px] md:h-[380px] lg:h-[450px]">
+                        <img :src="destinationData.thumb_image" alt="Destination" class="w-full h-full object-cover rounded-2xl">
                     </div>
 
                     <!-- Destination Info -->
-                    <div class="w-full lg:w-1/2 flex flex-col gap-4">
+                    <div class="w-full lg:w-1/2 flex flex-col gap-3">
                         <div class="flex justify-between items-center">
-                            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold">{{ destinationData.name }}</h1>
-                            <div class="flex gap-3">
-                                <button class="p-2 md:p-3 bg-[#DF6D2D] rounded-full">
-                                    <img src="/images/icons/export.svg" alt="Share" class="w-5 h-5 md:w-6 md:h-6" />
+                            <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold">{{ destinationData.name }}</h1>
+                            <div class="flex gap-2">
+                                <button class="p-1.5 md:p-2 bg-[#DF6D2D] rounded-full">
+                                    <img src="/images/icons/export.svg" alt="Share" class="w-4 h-4 md:w-5 md:h-5" />
                                 </button>
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-2">
-                            <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10" />
-                            <span class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-[#DF6D2D]">{{ "5.0" }}</span>
+                        <div class="flex items-center gap-1.5">
+                            <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" />
+                            <span class="text-lg sm:text-xl md:text-2xl font-semibold text-[#DF6D2D]">{{ "5.0" }}</span>
                         </div>
 
-                        <div class="flex flex-col gap-4 md:gap-6 mt-4 md:mt-6">
+                        <div class="flex flex-col gap-3 md:gap-4 mt-3 md:mt-4">
                             <!-- Opening Hours -->
-                            <div class="flex items-center gap-3 md:gap-4">
-                                <img src="/images/icons/clock.svg" alt="Clock" class="w-6 h-6 md:w-8 md:h-8" />
-                                <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-[#565950]">{{ "Buka Pukul 05.00 - 16.00" }}</span>
+                            <div class="flex items-center gap-2 md:gap-3">
+                                <img src="/images/icons/clock.svg" alt="Clock" class="w-5 h-5 md:w-6 md:h-6" />
+                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ "Buka Pukul 05.00 - 16.00" }}</span>
                             </div>
 
                             <!-- Address -->
-                            <div class="flex items-center gap-3 md:gap-4">
-                                <img src="/images/icons/location.svg" alt="Location" class="w-6 h-6 md:w-8 md:h-8" />
-                                <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-[#565950]">{{ "Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661" }}</span>
+                            <div class="flex items-center gap-2 md:gap-3">
+                                <img src="/images/icons/location.svg" alt="Location" class="w-5 h-5 md:w-6 md:h-6" />
+                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ "Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661" }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Description Section -->
-                <div class="mt-6 md:mt-8">
-                    <div class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-[#565950] text-justify" v-html="destinationData.content">
+                <div class="mt-5 md:mt-6">
+                    <div class="text-base sm:text-lg md:text-xl text-[#565950] text-justify" v-html="destinationData.content">
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Facilities and Map Section -->
-        <section class="py-8 md:py-12 lg:pb-16 px-5 md:px-8">
-            <div class="container lg:max-w-4/5 mx-auto flex flex-col lg:flex-row gap-8">
+        <section class="py-6 md:py-8 lg:py-10 px-4 md:px-6">
+            <div class="container lg:max-w-4/5 mx-auto flex flex-col lg:flex-row gap-6">
                 <!-- Map Section -->
                 <div class="w-full lg:w-1/2">
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold mb-4">Peta</h2>
-                    <div class="rounded-3xl overflow-hidden h-[300px] md:h-[350px] lg:h-[400px] w-full shadow-lg">
+                    <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-3">Peta</h2>
+                    <div class="rounded-2xl overflow-hidden h-[250px] md:h-[300px] lg:h-[350px] w-full shadow-lg">
                         <iframe 
                             width="100%" 
                             height="100%" 
@@ -156,12 +156,12 @@ const facilities = computed(() => {
                 </div>
 
                 <!-- Facilities Section -->
-                <div class="w-full lg:w-1/2 mt-8 lg:mt-0">
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold mb-4 md:mb-6">Fasilitas</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div v-for="(facility, index) in facilities" :key="index" class="flex items-center gap-3">
-                            <!-- <img :src="`/images/icons/${getFacilityIcon(facility)}.svg`" alt="Facility" class="w-6 h-6 md:w-8 md:h-8" /> -->
-                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl text-[#565950]">{{ facility }}</span>
+                <div class="w-full lg:w-1/2 mt-6 lg:mt-0">
+                    <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-3 md:mb-4">Fasilitas</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div v-for="(facility, index) in facilities" :key="index" class="flex items-center gap-2">
+                            <!-- <img :src="`/images/icons/${getFacilityIcon(facility)}.svg`" alt="Facility" class="w-5 h-5 md:w-6 md:h-6" /> -->
+                            <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ facility }}</span>
                         </div>
                     </div>
                 </div>
@@ -169,44 +169,44 @@ const facilities = computed(() => {
         </section>
 
         <!-- User Reviews Section -->
-        <section class="py-8 md:py-12 lg:pb-16 px-5 md:px-8">
+        <section class="py-6 md:py-8 lg:py-10 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold mb-4 sm:mb-0">Ulasan Pengguna</h2>
-                    <Link href="/ulasan/create" class="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-[#DF6D2D] text-white rounded-full">
-                        <img src="/images/icons/add-circle.svg" alt="Add" class="w-5 h-5 md:w-6 md:h-6" />
-                        <span class="text-lg md:text-xl lg:text-2xl font-semibold">Beri Ulasan</span>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-5">
+                    <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-3 sm:mb-0">Ulasan Pengguna</h2>
+                    <Link href="/ulasan/create" class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 bg-[#DF6D2D] text-white rounded-full">
+                        <img src="/images/icons/add-circle.svg" alt="Add" class="w-4 h-4 md:w-5 md:h-5" />
+                        <span class="text-base md:text-lg font-semibold">Beri Ulasan</span>
                     </Link>
                 </div>
 
                 <!-- Reviews List -->
-                <div class="flex flex-col gap-4 md:gap-6">
+                <div class="flex flex-col gap-3 md:gap-4">
                     <div v-for="testimonial in testimonialsList" :key="testimonial.id" 
-                        class="p-4 md:p-6 rounded-3xl bg-white shadow-md">
-                        <div class="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
-                            <div class="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full overflow-hidden">
+                        class="p-3 md:p-4 rounded-2xl bg-white shadow-md">
+                        <div class="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                            <div class="w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full overflow-hidden">
                                 <img :src="'https://i.pravatar.cc/150'" alt="User" class="w-full h-full object-cover" />
                             </div>
                             <div class="flex flex-col">
-                                <span class="text-lg md:text-xl lg:text-2xl font-semibold">{{ "User" }}</span>
-                                <div class="flex items-center gap-2">
-                                    <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-4 h-4 md:w-5 md:h-5" />
-                                    <span class="text-base md:text-lg lg:text-xl font-semibold text-[#DF6D2D]">{{ testimonial.rating }}/5</span>
+                                <span class="text-base md:text-lg lg:text-xl font-semibold">{{ "User" }}</span>
+                                <div class="flex items-center gap-1.5">
+                                    <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    <span class="text-sm md:text-base font-semibold text-[#DF6D2D]">{{ testimonial.rating }}/5</span>
                                 </div>
                             </div>
                         </div>
-                        <p class="text-base md:text-lg lg:text-2xl text-[#565950]">{{ testimonial.comment }}</p>
+                        <p class="text-sm md:text-base lg:text-lg text-[#565950]">{{ testimonial.comment }}</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Recommended Destinations Section -->
-        <section class="py-8 md:py-12 lg:py-16 px-5 md:px-8">
+        <section class="py-6 md:py-8 lg:py-10 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
-                <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-center mb-6 md:mb-8">Rekomendasi Wisata</h2>
+                <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-center mb-4 md:mb-6">Rekomendasi Wisata</h2>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
                     <DestinationCard 
                         v-for="destination in nearbyDestinations" 
                         :key="destination.id"
@@ -218,10 +218,10 @@ const facilities = computed(() => {
                     />
                 </div>
 
-                <div class="flex justify-center mt-8 md:mt-12">
-                    <Link href="/katalog" class="flex items-center gap-3 md:gap-4 px-5 md:px-6 py-2 md:py-3 bg-[#DF6D2D] text-white text-xl md:text-2xl lg:text-3xl font-semibold rounded-full">
+                <div class="flex justify-center mt-5 md:mt-7">
+                    <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2 bg-[#DF6D2D] text-white text-base md:text-lg lg:text-xl font-semibold rounded-full">
                         <span>Lihat Lebih Banyak</span>
-                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" />
+                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
                     </Link>
                 </div>
             </div>
