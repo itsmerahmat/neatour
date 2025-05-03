@@ -65,7 +65,7 @@ class TestimonialController extends Controller
 
         Testimonial::create($validated);
 
-        return Redirect::route('testimonial.index')->with('success', 'Testimonial created successfully.');
+        return Redirect::route('katalog.detail', ['id' => $request->destination_id])->with('success', 'Testimonial created successfully.');
     }
 
     /**

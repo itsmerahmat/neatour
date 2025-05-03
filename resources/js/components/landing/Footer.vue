@@ -44,7 +44,7 @@
 
                 <div class="flex flex-col gap-2 md:gap-3">
                     <h4 class="text-lg md:text-xl font-semibold mb-1 text-center sm:text-left">Hubungi Kami</h4>
-                    <p class="text-sm md:text-base font-medium text-center sm:text-left">Email : eavy.coompany@gmail.com</p>
+                    <p class="text-sm md:text-base font-medium text-center sm:text-left">Email : eavy.company@gmail.com</p>
                     <p class="text-sm md:text-base font-medium text-center sm:text-left">Alamat : Gedung 2 FMIPA ULM</p>
                     <p class="text-sm md:text-base font-medium text-center sm:text-left">Instagram : @eavy.tech</p>
                     <p class="text-sm md:text-base font-medium text-center sm:text-left">WhatsApp : 0812-3456-7890</p>

@@ -4,7 +4,8 @@ import { Head } from '@inertiajs/vue3';
 import Footer from '@/components/landing/Footer.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useLocation } from '@/composables/useLocation';
 
 // Define props for data passed from the controller
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -22,6 +23,9 @@ const props = defineProps({
         default: () => []
     }
 });
+
+// Use the location composable
+const { getUserLocation } = useLocation();
 
 // Search functionality
 const searchQuery = ref('');
@@ -49,7 +53,7 @@ const filteredDestinations = computed(() => {
         }
         
         // Rating filter - assuming rating is a property of destination
-        if (selectedRating.value && destination.rating! < parseFloat(selectedRating.value)) {
+        if (selectedRating.value && destination.avg_rating! < parseFloat(selectedRating.value)) {
             return false;
         }
         
@@ -77,6 +81,10 @@ function clearFilters() {
     showFilter.value = false;
 }
 
+onMounted(() => {
+    // Request user location on page load
+    getUserLocation(['nearbyDestinations']);
+});
 </script>
 
 <template>
@@ -178,7 +186,7 @@ function clearFilters() {
                         :id="destination.id"
                         :name="destination.name"
                         :thumbImage="destination.thumb_image"
-                        :rating="'5.0'"
+                        :rating="destination.avg_rating || 0"
                         :distance="'5 Km'"
                     />
                 </div>

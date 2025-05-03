@@ -53,7 +53,8 @@ export interface Destination {
     lat: number;
     lon: number;
     pic_id: number;
-    rating?: number;
+    avg_rating?: number;
+    total_reviews?: number;
     distance?: number;
     published: boolean;
     created_at: string;

@@ -41,7 +41,7 @@ onBeforeUnmount(() => {
             isScrolled ? 'bg-white shadow-md' : 'bg-white',
         ]">
         <div class="container lg:max-w-4/5 mx-auto flex justify-between items-center">
-            <Link href="/" class="h-7 md:h-10">
+            <Link href="/" class="h-7 md:h-12">
                 <img src="/images/logo/logo.png" alt="NeaTour Logo" class="h-full" />
             </Link>
             

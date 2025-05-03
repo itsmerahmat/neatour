@@ -29,6 +29,8 @@ class Destination extends Model
         'lon' => 'float',
     ];
 
+    protected $appends = ['avg_rating', 'total_reviews'];
+
     public function pic(): BelongsTo
     {
         return $this->belongsTo(User::class, 'pic_id');
@@ -42,5 +44,31 @@ class Destination extends Model
     public function testimonials(): HasMany
     {
         return $this->hasMany(Testimonial::class);
+    }
+    
+    /**
+     * Get the average rating for this destination.
+     *
+     * @return float
+     */
+    public function getAvgRatingAttribute(): float
+    {
+        $testimonials = $this->testimonials;
+        
+        if ($testimonials->isEmpty()) {
+            return 0;
+        }
+        
+        return round($testimonials->avg('rating'), 1);
+    }
+    
+    /**
+     * Get the total number of reviews/testimonials for this destination.
+     *
+     * @return int
+     */
+    public function getTotalReviewsAttribute(): int
+    {
+        return $this->testimonials->count();
     }
 }

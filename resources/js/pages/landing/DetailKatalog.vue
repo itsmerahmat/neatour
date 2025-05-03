@@ -1,23 +1,19 @@
 <script setup lang="ts">
 import { Destination, Testimonial } from '@/types';
-import { ref, computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { ref, computed, onMounted } from 'vue';
+import { Link, Head, useForm } from '@inertiajs/vue3';
 import Footer from '@/components/landing/Footer.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
+import { useLocation } from '@/composables/useLocation';
 
 // Define props for data passed from the controller
 const props = defineProps({
     destination: {
         type: Object as () => Destination,
         default: () => ({})
-
     },
     nearbyDestinations: {
-        type: Array as () => Destination[],
-        default: () => []
-    },
-    relatedDestinations: {
         type: Array as () => Destination[],
         default: () => []
     },
@@ -26,6 +22,9 @@ const props = defineProps({
         default: () => []
     }
 });
+
+// Use the location composable
+const { getUserLocation } = useLocation();
 
 // Dummy data for destination details
 const dummyDestination = ref({
@@ -38,7 +37,8 @@ const dummyDestination = ref({
     lon: 114.7446383,
     operating_hours: 'Buka Pukul 05.00 - 16.00',
     address: 'Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661',
-    rating: 5.0,
+    avg_rating: 5.0,
+    total_reviews: 2,
     published: true,
 });
 
@@ -64,6 +64,10 @@ const dummyTestimonials = ref([
     }
 ]);
 
+const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
 // Use data from props or dummy data
 const destinationData = computed(() => Object.keys(props.destination).length > 0 ? props.destination : dummyDestination.value);
 const testimonialsList = computed(() => props.testimonials.length > 0 ? props.testimonials : dummyTestimonials.value);
@@ -75,10 +79,36 @@ const facilities = computed(() => {
     }
     return [];
 });
+
+// Modal state
+const showReviewModal = ref(false);
+
+// Review form
+const reviewForm = useForm({
+    destination_id: destinationData.value.id,
+    rating: 0,
+    comment: '',
+});
+
+// Submit review
+const submitReview = () => {
+    reviewForm.post('/testimonial', {
+        preserveScroll: true,
+        onSuccess: () => {
+            showReviewModal.value = false;
+            reviewForm.reset();
+        }
+    });
+};
+
+onMounted(() => {
+    // Request user location on page load
+    getUserLocation(['nearbyDestinations']);
+});
 </script>
 
 <template>
-    <Head title="Detail Destinasi">
+    <Head :title="destinationData.name">
         <!-- Google font poppins -->
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
@@ -110,7 +140,7 @@ const facilities = computed(() => {
 
                         <div class="flex items-center gap-1.5">
                             <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" />
-                            <span class="text-lg sm:text-xl md:text-2xl font-semibold text-[#DF6D2D]">{{ "5.0" }}</span>
+                            <span class="text-lg sm:text-xl md:text-2xl font-semibold text-[#DF6D2D]">{{ destinationData.avg_rating }}</span> ({{ destinationData.total_reviews }} Ulasan)
                         </div>
 
                         <div class="flex flex-col gap-3 md:gap-4 mt-3 md:mt-4">
@@ -158,10 +188,10 @@ const facilities = computed(() => {
                 <!-- Facilities Section -->
                 <div class="w-full lg:w-1/2 mt-6 lg:mt-0">
                     <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-3 md:mb-4">Fasilitas</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3">
                         <div v-for="(facility, index) in facilities" :key="index" class="flex items-center gap-2">
                             <!-- <img :src="`/images/icons/${getFacilityIcon(facility)}.svg`" alt="Facility" class="w-5 h-5 md:w-6 md:h-6" /> -->
-                            <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ facility }}</span>
+                            <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ capitalizeFirstLetter(facility) }}</span>
                         </div>
                     </div>
                 </div>
@@ -173,10 +203,10 @@ const facilities = computed(() => {
             <div class="container lg:max-w-4/5 mx-auto">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-5">
                     <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-3 sm:mb-0">Ulasan Pengguna</h2>
-                    <Link href="/ulasan/create" class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 bg-[#DF6D2D] text-white rounded-full">
+                    <button @click="showReviewModal = true" class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 bg-[#DF6D2D] text-white rounded-full">
                         <img src="/images/icons/add-circle.svg" alt="Add" class="w-4 h-4 md:w-5 md:h-5" />
                         <span class="text-base md:text-lg font-semibold">Beri Ulasan</span>
-                    </Link>
+                    </button>
                 </div>
 
                 <!-- Reviews List -->
@@ -201,6 +231,68 @@ const facilities = computed(() => {
             </div>
         </section>
 
+        <!-- Review Modal -->
+        <transition name="fade">
+            <div v-if="showReviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl" @click.stop>
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-[#33372C]">Beri Ulasan</h3>
+                        <button @click="showReviewModal = false" class="text-gray-500 hover:text-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form @submit.prevent="submitReview">
+                        <!-- Rating selection -->
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-semibold mb-2">Rating</label>
+                            <div class="flex gap-2">
+                                <button 
+                                    v-for="star in 5" 
+                                    :key="star" 
+                                    type="button"
+                                    @click="reviewForm.rating = star" 
+                                    class="focus:outline-none">
+                                    <img 
+                                        :src="reviewForm.rating >= star ? '/images/icons/medal-star-primary.svg' : '/images/icons/medal-star-invert.svg'" 
+                                        alt="star" 
+                                        class="w-6 h-6"
+                                    >
+                                </button>
+                            </div>
+                            <div v-if="reviewForm.errors.rating" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.rating }}</div>
+                        </div>
+                        
+                        <!-- Comment input -->
+                        <div class="mb-6">
+                            <label for="comment" class="block text-gray-700 text-sm font-semibold mb-2">Komentar</label>
+                            <textarea
+                                id="comment"
+                                v-model="reviewForm.comment"
+                                rows="4"
+                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DF6D2D]"
+                                placeholder="Bagikan pengalaman Anda..."
+                            ></textarea>
+                            <div v-if="reviewForm.errors.comment" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.comment }}</div>
+                        </div>
+                        
+                        <!-- Submit button -->
+                        <div class="flex justify-end">
+                            <button
+                                type="submit"
+                                :disabled="reviewForm.processing"
+                                class="px-4 py-2 bg-[#DF6D2D] text-white rounded-full font-semibold hover:bg-[#c95e24] transition disabled:opacity-75"
+                            >
+                                {{ reviewForm.processing ? 'Memproses...' : 'Kirim Ulasan' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </transition>
+
         <!-- Recommended Destinations Section -->
         <section class="py-6 md:py-8 lg:py-10 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
@@ -213,7 +305,7 @@ const facilities = computed(() => {
                         :id="destination.id"
                         :name="destination.name"
                         :thumbImage="destination.thumb_image"
-                        :rating="'5.0'"
+                        :rating="destination.avg_rating || 0"
                         :distance="'5 Km'"
                     />
                 </div>
@@ -231,3 +323,15 @@ const facilities = computed(() => {
         <Footer />
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

@@ -179,6 +179,10 @@ class DestinationController extends Controller
             }
         }
 
+        // Delete related testimonials first to avoid foreign key constraint violations
+        $destination->testimonials()->delete();
+        
+        // Then detach categories and delete the destination
         $destination->categories()->detach();
         $destination->delete();
 

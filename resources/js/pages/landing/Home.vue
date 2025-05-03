@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Category, Destination, Testimonial } from '@/types';
+import { Destination } from '@/types';
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
@@ -7,6 +7,7 @@ import Footer from '@/components/landing/Footer.vue';
 import FeatureCard from '@/components/landing/FeatureCard.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
+import { useLocation } from '@/composables/useLocation';
 
 // Define props for data passed from the controller
 const props = defineProps({
@@ -14,15 +15,10 @@ const props = defineProps({
         type: Array as () => Destination[],
         default: () => []
     },
-    categories: {
-        type: Array as () => Category[],
-        default: () => []
-    },
-    testimonials: {
-        type: Array as () => Testimonial[],
-        default: () => []
-    }
 });
+
+// Use the location composable
+const { getUserLocation } = useLocation();
 
 // Dummy data for destinations
 const dummyDestinations = ref([
@@ -50,7 +46,7 @@ const dummyDestinations = ref([
 ]);
 
 // Use data from props or dummy data
-const nearbyDestinations = ref(props.nearbyDestinations.length > 0 ? props.nearbyDestinations : dummyDestinations.value);
+const nearbyDestinations = ref(props.nearbyDestinations ? props.nearbyDestinations : dummyDestinations.value);
 
 // Carousel state
 const currentSlide = ref(0);
@@ -89,6 +85,9 @@ onMounted(() => {
     if (nearbyDestinations.value.length > 1) {
         startAutoplay();
     }
+    
+    // Request user location on page load
+    getUserLocation(['nearbyDestinations']);
 });
 </script>
 
@@ -215,8 +214,8 @@ onMounted(() => {
                         :id="destination.id"
                         :name="destination.name"
                         :thumbImage="destination.thumb_image"
-                        :rating="'5.0'"
-                        :distance="'5 Km'"
+                        :rating="destination.avg_rating || 0"
+                        :distance="destination.distance ? `${destination.distance} Km` : '5 Km'"
                     />
                 </div>
 
