@@ -15,42 +15,18 @@ const props = defineProps({
         type: Array as () => Destination[],
         default: () => []
     },
+    images: {
+        type: Array as () => string[],
+        default: () => []
+    }
 });
 
 // Use the location composable
 const { getUserLocation } = useLocation();
 
-// Dummy data for destinations
-const dummyDestinations = ref([
-    {
-        id: 1,
-        name: 'Tahura Sultan Adam',
-        thumb_image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
-        rating: '5.0',
-        distance: '10 Km'
-    },
-    {
-        id: 2,
-        name: 'Bukit Banyu Hirang',
-        thumb_image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
-        rating: '4.9',
-        distance: '15 Km'
-    },
-    {
-        id: 3,
-        name: 'Air Terjun Bajuin',
-        thumb_image: 'https://images.unsplash.com/photo-1496434059439-62081c11e4a9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
-        rating: '4.8',
-        distance: '20 Km'
-    }
-]);
-
-// Use data from props or dummy data
-const nearbyDestinations = ref(props.nearbyDestinations ? props.nearbyDestinations : dummyDestinations.value);
-
 // Carousel state
 const currentSlide = ref(0);
-const totalSlides = ref(nearbyDestinations.value.length);
+const totalSlides = ref(props.images.length);
 
 // Default background image for fallback
 const defaultBgImage = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80';
@@ -82,7 +58,7 @@ const stopAutoplay = () => {
 };
 
 onMounted(() => {
-    if (nearbyDestinations.value.length > 1) {
+    if (props.images.length > 1) {
         startAutoplay();
     }
     
@@ -106,7 +82,7 @@ onMounted(() => {
                 class="container lg:max-w-4/5 mx-auto relative min-h-[400px] md:min-h-[500px] lg:min-h-[600px] flex flex-col bg-cover bg-center rounded-2xl overflow-hidden transition-all duration-500 ease-in-out" 
                 :style="{
                     backgroundImage: `url('${
-                        nearbyDestinations[currentSlide]?.thumb_image || defaultBgImage
+                        props.images[currentSlide] || defaultBgImage
                     }')`,
                 }"
             >
@@ -125,9 +101,9 @@ onMounted(() => {
                             <button class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg bg-[#DF6D2D] text-white rounded-full">
                                 Mulai Petualanganmu
                             </button>
-                            <button class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg border border-white text-white rounded-full">
+                            <Link href="/katalog" class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg border border-white text-white rounded-full">
                                 Rekomendasi Wisata
-                            </button>
+                            </Link>
                         </div>
                     </div>
 
@@ -145,7 +121,7 @@ onMounted(() => {
                         <!-- carousel indicators -->
                         <div class="flex gap-1.5">
                             <button 
-                                v-for="(_, index) in nearbyDestinations" 
+                                v-for="(_, index) in Array(totalSlides)" 
                                 :key="index" 
                                 @click="currentSlide = index"
                                 class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white opacity-50 transition-opacity duration-300"
@@ -209,13 +185,13 @@ onMounted(() => {
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-8">
                     <DestinationCard 
-                        v-for="destination in nearbyDestinations" 
+                        v-for="destination in props.nearbyDestinations" 
                         :key="destination.id"
                         :id="destination.id"
                         :name="destination.name"
                         :thumbImage="destination.thumb_image"
                         :rating="destination.avg_rating || 0"
-                        :distance="destination.distance ? `${destination.distance} Km` : '5 Km'"
+                        :distance="destination.distance ? `${destination.distance} Km` : ' - '"
                     />
                 </div>
 

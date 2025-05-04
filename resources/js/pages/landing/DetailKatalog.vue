@@ -300,13 +300,13 @@ onMounted(() => {
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
                     <DestinationCard 
-                        v-for="destination in nearbyDestinations" 
+                        v-for="destination in props.nearbyDestinations" 
                         :key="destination.id"
                         :id="destination.id"
                         :name="destination.name"
                         :thumbImage="destination.thumb_image"
                         :rating="destination.avg_rating || 0"
-                        :distance="'5 Km'"
+                        :distance="destination.distance ? `${destination.distance} Km` : '-'"
                     />
                 </div>
 

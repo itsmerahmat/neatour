@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+
+// Get auth user information
+const page = usePage();
+const authSession: any = computed(() => page.props.auth);
+const isLoggedIn = computed(() => authSession.value.user);
 
 // Define props for highlighting the active route
 defineProps({
@@ -70,9 +75,9 @@ onBeforeUnmount(() => {
             </nav>
             
             <!-- Desktop Login Button -->
-            <Link href="/login" class="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-[#DF6D2D] text-white rounded-full">
+            <Link :href="isLoggedIn ? '/dashboard' : '/login'" class="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-[#DF6D2D] text-white rounded-full">
                 <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4 md:w-5 md:h-5" />
-                <span class="font-medium text-lg xl:text-xl">Login</span>
+                <span class="font-medium text-lg xl:text-xl">{{ isLoggedIn ? 'Admin' : 'Login' }}</span>
             </Link>
         </div>
     </header>
@@ -97,11 +102,11 @@ onBeforeUnmount(() => {
                     ]">
                     Katalog
                 </Link>
-                <Link href="/login">
+                <Link :href="isLoggedIn ? '/dashboard' : '/login'"
                     @click="isMenuOpen = false"
                     class="flex items-center gap-1.5 px-3 py-1.5 bg-[#DF6D2D] text-white rounded-full w-fit">
                     <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4" />
-                    <span class="font-medium text-lg">Login</span>
+                    <span class="font-medium text-lg">{{ isLoggedIn ? 'Admin' : 'Login' }}</span>
                 </Link>
             </nav>
         </div>

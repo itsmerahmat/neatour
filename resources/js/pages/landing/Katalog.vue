@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { Category, Destination, Testimonial } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import Footer from '@/components/landing/Footer.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useLocation } from '@/composables/useLocation';
 
 // Define props for data passed from the controller
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
     nearbyDestinations: {
         type: Array as () => Destination[],
@@ -21,6 +20,23 @@ const props = defineProps({
     testimonials: {
         type: Array as () => Testimonial[],
         default: () => []
+    },
+    filters: {
+        type: Object,
+        default: () => ({
+            searchQuery: '',
+            categoryId: '',
+            rating: ''
+        })
+    },
+    pagination: {
+        type: Object,
+        default: () => ({
+            page: 1,
+            perPage: 9,
+            totalCount: 0,
+            lastPage: 1
+        })
     }
 });
 
@@ -28,42 +44,28 @@ const props = defineProps({
 const { getUserLocation } = useLocation();
 
 // Search functionality
-const searchQuery = ref('');
+const searchQuery = ref(props.filters.searchQuery || '');
 const showFilter = ref(false);
-const selectedCategory = ref('');
-const selectedRating = ref('');
-const distanceFilter = ref(0);
+const selectedCategory = ref(props.filters.categoryId || '');
+const selectedRating = ref(props.filters.rating || '');
+const isLoadingMore = ref(false);
+const currentPage = ref(props.pagination.page || 1);
 
-const filteredDestinations = computed(() => {
-    if (!searchQuery.value && !selectedCategory.value && !selectedRating.value && !distanceFilter.value) {
-        return props.nearbyDestinations;
+// Create custom debounce functionality
+let searchTimeout: number | null = null;
+
+// Watch for search query changes
+watch(searchQuery, () => {
+    // Clear existing timeout if any
+    if (searchTimeout !== null) {
+        clearTimeout(searchTimeout);
     }
     
-    return props.nearbyDestinations.filter(destination => {
-        // Search query filter
-        if (searchQuery.value && !destination.name.toLowerCase().includes(searchQuery.value.toLowerCase())) {
-            return false;
-        }
-        
-        // Category filter
-        if (selectedCategory.value && 
-            (!destination.categories || 
-             !destination.categories.some(cat => cat.id.toString() === selectedCategory.value))) {
-            return false;
-        }
-        
-        // Rating filter - assuming rating is a property of destination
-        if (selectedRating.value && destination.avg_rating! < parseFloat(selectedRating.value)) {
-            return false;
-        }
-        
-        // Distance filter - assuming distance is a property of destination
-        if (distanceFilter.value && destination.distance! > distanceFilter.value) {
-            return false;
-        }
-        
-        return true;
-    });
+    // Set new timeout
+    searchTimeout = window.setTimeout(() => {
+        applyServerFilters();
+        searchTimeout = null;
+    }, 500);
 });
 
 function toggleFilter() {
@@ -72,13 +74,83 @@ function toggleFilter() {
 
 function applyFilters() {
     showFilter.value = false;
+    applyServerFilters();
 }
 
 function clearFilters() {
     selectedCategory.value = '';
     selectedRating.value = '';
-    distanceFilter.value = 0;
     showFilter.value = false;
+    applyServerFilters();
+}
+
+function applyServerFilters() {
+    // Reset to first page when applying new filters
+    currentPage.value = 1;
+    
+    router.visit('/katalog', {
+        data: {
+            searchQuery: searchQuery.value,
+            categoryId: selectedCategory.value,
+            rating: selectedRating.value,
+            page: 1,
+            perPage: props.pagination.perPage,
+            latitude: getUserCoordinates().latitude,
+            longitude: getUserCoordinates().longitude
+        },
+        preserveState: true,
+        preserveScroll: true,
+        only: ['nearbyDestinations', 'filters', 'pagination']
+    });
+}
+
+function loadMore() {
+    if (currentPage.value >= props.pagination.lastPage || isLoadingMore.value) {
+        return;
+    }
+    
+    isLoadingMore.value = true;
+    const nextPage = currentPage.value + 1;
+    
+    router.visit('/katalog', {
+        data: {
+            searchQuery: searchQuery.value,
+            categoryId: selectedCategory.value,
+            rating: selectedRating.value,
+            page: nextPage,
+            perPage: props.pagination.perPage,
+            latitude: getUserCoordinates().latitude,
+            longitude: getUserCoordinates().longitude
+        },
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            currentPage.value = nextPage;
+            isLoadingMore.value = false;
+        },
+        onError: () => {
+            isLoadingMore.value = false;
+        },
+        only: ['nearbyDestinations', 'pagination']
+    });
+}
+
+function getUserCoordinates() {
+    // Check localStorage for user coordinates
+    const locationData = localStorage.getItem('user_location');
+    if (locationData) {
+        try {
+            const parsedData = JSON.parse(locationData);
+            return {
+                latitude: parsedData.latitude,
+                longitude: parsedData.longitude
+            };
+        } catch (error) {
+            console.error('Error parsing location data:', error);
+        }
+    }
+    
+    return { latitude: null, longitude: null };
 }
 
 onMounted(() => {
@@ -154,17 +226,6 @@ onMounted(() => {
                                 </select>
                             </div>
                             
-                            <div class="mb-2 md:mb-3">
-                                <label class="block text-sm text-[#565950] mb-1">Jarak Maksimal (Km)</label>
-                                <input type="range" v-model="distanceFilter" min="0" max="50" step="5" 
-                                    class="w-full accent-[#DF6D2D]" />
-                                <div class="flex justify-between text-xs text-gray-500">
-                                    <span>0 km</span>
-                                    <span>{{ distanceFilter }} km</span>
-                                    <span>50 km</span>
-                                </div>
-                            </div>
-                            
                             <div class="flex gap-2 mt-3 md:mt-4">
                                 <button @click="clearFilters" 
                                     class="flex-1 py-1 border border-[#DF6D2D] text-[#DF6D2D] text-sm rounded-full hover:bg-gray-50">
@@ -181,22 +242,38 @@ onMounted(() => {
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 lg:gap-8">
                     <DestinationCard 
-                        v-for="destination in filteredDestinations" 
+                        v-for="destination in props.nearbyDestinations" 
                         :key="destination.id"
                         :id="destination.id"
                         :name="destination.name"
                         :thumbImage="destination.thumb_image"
                         :rating="destination.avg_rating || 0"
-                        :distance="'5 Km'"
+                        :distance="destination.distance ? `${destination.distance} Km` : '-'"
                     />
+                </div>
+                
+                <!-- No results message -->
+                <div v-if="props.nearbyDestinations.length === 0" class="text-center py-8">
+                    <p class="text-lg text-gray-500">Tidak ada destinasi yang cocok dengan filter yang dipilih</p>
                 </div>
 
                 <div class="flex justify-center mt-6 md:mt-8">
                     <button
-                        class="flex items-center gap-2 px-4 py-2 md:py-2.5 bg-[#DF6D2D] text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full">
-                        <span>Lihat Lebih Banyak</span>
-                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-5 h-5 md:w-6 md:h-6" />
+                        v-if="currentPage < props.pagination.lastPage"
+                        @click="loadMore"
+                        class="flex items-center gap-2 px-4 py-2 md:py-2.5 bg-[#DF6D2D] text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full"
+                        :disabled="isLoadingMore"
+                    >
+                        <span>{{ isLoadingMore ? 'Memuat...' : 'Lihat Lebih Banyak' }}</span>
+                        <img v-if="!isLoadingMore" src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-5 h-5 md:w-6 md:h-6" />
+                        <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                     </button>
+                    <div v-else-if="props.nearbyDestinations.length > 0" class="py-2 md:py-2.5 text-gray-500 text-lg">
+                        Semua destinasi telah ditampilkan
+                    </div>
                 </div>
             </div>
         </section>
