@@ -6,7 +6,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Destination } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
     destination: {
         type: Object as () => Destination,
@@ -130,6 +129,14 @@ function formatDate(dateString: string): string {
                                 <div>
                                     <h3 class="font-medium text-sm">Lokasi GPS</h3>
                                     <p>{{ destination.lat }}, {{ destination.lon }}</p>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-sm">Alamat</h3>
+                                    <p>{{ destination.address || 'N/A' }}</p>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-sm">Jam Operasional</h3>
+                                    <p>{{ destination.operating_hours || 'N/A' }}</p>
                                 </div>
                                 <div>
                                     <h3 class="font-medium text-sm">Tanggal Dibuat</h3>

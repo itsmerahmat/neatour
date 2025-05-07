@@ -11,8 +11,8 @@ import { MultiSelect, type Option } from '@/components/ui/multi-select';
 import { LocationMap } from '@/components/ui/location-map';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem, type Category, type Destination, type User } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { SharedData, type BreadcrumbItem, type Category, type Destination, type User } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -55,6 +55,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Get auth user information
+const page = usePage<SharedData>();
+const user = computed(() => page.props.auth.user);
+
 // Initialize form with destination data or default values
 const form = useForm({
     name: props.destination?.name || '',
@@ -63,7 +67,9 @@ const form = useForm({
     thumb_image: null as File | null,
     lat: props.destination?.lat || -6.200000, // Default to Indonesia's approximate coordinates
     lon: props.destination?.lon || 106.816666,
-    pic_id: props.destination?.pic_id ? String(props.destination.pic_id) : '',
+    address: props.destination?.address || '',
+    opening_hours: props.destination?.operating_hours || '',
+    pic_id: props.destination?.pic_id ? String(props.destination.pic_id) : String(user.value.id),
     published: props.destination?.published || false,
     categories: props.destination?.categories?.map(category => category.id) || [] as string[],
     _method: props.isEditing ? 'PUT' : 'POST',
@@ -139,7 +145,7 @@ const locationData = computed({
 
                             <div class="space-y-2">
                                 <Label for="pic_id">Person in Charge (PIC)</Label>
-                                <Select v-model="form.pic_id">
+                                <Select v-model="form.pic_id" :disabled="user.role !== 'superadmin'">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih PIC" />
                                     </SelectTrigger>
@@ -209,6 +215,23 @@ const locationData = computed({
                         :errorLat="form.errors.lat"
                         :errorLon="form.errors.lon"
                     />
+
+                    <!-- Location Details -->
+                    <div class="space-y-4">
+                        <h3 class="font-medium text-lg">Detail Lokasi</h3>
+                        
+                        <div class="space-y-2">
+                            <Label for="address">Alamat</Label>
+                            <Textarea id="address" v-model="form.address" rows="2" placeholder="Masukkan alamat lengkap destinasi" />
+                            <div v-if="form.errors.address" class="text-sm text-red-500">{{ form.errors.address }}</div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="opening_hours">Jam Operasional</Label>
+                            <Input id="opening_hours" v-model="form.opening_hours" type="text" placeholder="Contoh: 08:00 - 17:00" />
+                            <div v-if="form.errors.opening_hours" class="text-sm text-red-500">{{ form.errors.opening_hours }}</div>
+                        </div>
+                    </div>
 
                     <!-- Publishing Options -->
                     <div class="space-y-4">

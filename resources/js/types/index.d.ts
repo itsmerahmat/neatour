@@ -31,6 +31,8 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    role: string;
+    phone_number?: string;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -52,6 +54,8 @@ export interface Destination {
     facility: string;
     lat: number;
     lon: number;
+    address?: string;
+    operating_hours?: string;
     pic_id: number;
     avg_rating?: number;
     total_reviews?: number;
@@ -78,6 +82,7 @@ export interface DestinationTestimonial {
 export interface Testimonial {
     id: number;
     destination_id: string;
+    name?: string;
     comment: string;
     rating: number;
     created_at: string;

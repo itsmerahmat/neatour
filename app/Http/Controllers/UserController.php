@@ -18,10 +18,10 @@ class UserController extends Controller
     public function index(Request $request)
     {
         // Define searchable columns
-        $searchableColumns = ['name', 'email'];
+        $searchableColumns = ['name', 'email', 'role', 'phone_number'];
         
         // Define allowed sort fields
-        $allowedSortFields = ['id', 'name', 'email', 'created_at', 'updated_at'];
+        $allowedSortFields = ['id', 'name', 'email', 'role', 'phone_number', 'created_at', 'updated_at'];
         
         // Process DataTable request
         $result = $this->processDataTable(

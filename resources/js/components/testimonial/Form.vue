@@ -57,6 +57,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Initialize form with testimonial data or default values
 const form = useForm({
     destination_id: props.testimonial?.destination_id || '',
+    name: props.testimonial?.name || '',
     comment: props.testimonial?.comment || '',
     rating: props.testimonial?.rating || 5,
     _method: props.isEditing ? 'PUT' : 'POST',
@@ -118,6 +119,18 @@ const ratings = [
                         </Select>
                         <div v-if="form.errors.destination_id" class="text-sm text-red-500">
                             {{ form.errors.destination_id }}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="name">Nama</Label>
+                        <Input 
+                            id="name"
+                            v-model="form.name"
+                            placeholder="Masukkan nama pengulas"
+                        />
+                        <div v-if="form.errors.name" class="text-sm text-red-500">
+                            {{ form.errors.name }}
                         </div>
                     </div>
 

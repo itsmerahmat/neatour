@@ -13,10 +13,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Testimonial, type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { SharedData, Testimonial, type BreadcrumbItem } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 // Import DataTable component
 import { DataTable } from '@/components/datatable';
@@ -53,10 +53,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Menggunakan usePage dengan tipe SharedData untuk mendapatkan informasi user yang sedang login
+const page = usePage<SharedData>();
+const user = computed(() => page.props.auth.user);
+
 // Define table columns
 const columns = [
     { key: 'id', label: 'No', class: 'w-12 text-center', sortable: false },
-    { key: 'destination.name', label: 'Destinasi', sortable: true },
+    // { key: 'destination.name', label: 'Destinasi', sortable: true },
+    { key: 'destination', label: 'Destinasi', sortable: true },
     { key: 'comment', label: 'Komentar', sortable: true },
     { key: 'rating', label: 'Rating', sortable: true },
 ];
@@ -111,7 +116,7 @@ function renderStars(rating: number) {
                 </div>
 
                 <!-- Tombol untuk menambah testimonial -->
-                <Button variant="default" as-child>
+                <Button variant="default" as-child v-if="user.role === 'superadmin'">
                     <Link href="/testimonial/create">Tambah Testimonial</Link>
                 </Button>
             </CardHeader>
@@ -127,7 +132,18 @@ function renderStars(rating: number) {
                     @row-action="handleRowAction"
                 >
                     <!-- Custom cell rendering for specific columns -->
-                    <template #cell="{ column, row }">
+                    <template #cell="{ column, row, index }">
+
+                        <!-- Custom rendering for ID column -->
+                        <template v-if="column.key === 'id'">
+                            {{ index + 1 }}
+                        </template>
+
+                        <!-- Custom rendering for destination column -->
+                        <template v-else-if="column.key === 'destination'">
+                            {{ row.destination ? row.destination.name : 'Tidak ada destinasi' }}
+                        </template>
+
                         <!-- Custom rendering for rating column -->
                         <template v-if="column.key === 'rating'">
                             <span class="text-yellow-500">{{ renderStars(row.rating) }}</span>
@@ -143,12 +159,12 @@ function renderStars(rating: number) {
                             </Button>
                             
                             <!-- Edit button -->
-                            <Button variant="outline" size="sm" as-child>
+                            <Button variant="outline" size="sm" as-child v-if="user.role === 'superadmin'">
                                 <Link :href="`/testimonial/${row.id}/edit`">Edit</Link>
                             </Button>
 
                             <!-- Delete button with confirmation -->
-                            <AlertDialog>
+                            <AlertDialog v-if="user.role === 'superadmin'">
                                 <AlertDialogTrigger asChild>
                                     <Button variant="destructive" size="sm" @click="testimonialToDelete = row.id">
                                         Hapus
