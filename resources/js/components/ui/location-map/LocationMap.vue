@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import InputError from '@/components/InputError.vue';
 import { ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -187,7 +188,7 @@ function onLonChange(event: Event) {
           step="any" 
           placeholder="Contoh: -7.797068" 
         />
-        <div v-if="errorLat" class="text-sm text-red-500">{{ errorLat }}</div>
+        <InputError v-if="errorLat" :message="errorLat" />
       </div>
 
       <div class="space-y-2">
@@ -200,7 +201,7 @@ function onLonChange(event: Event) {
           step="any" 
           placeholder="Contoh: 110.370529" 
         />
-        <div v-if="errorLon" class="text-sm text-red-500">{{ errorLon }}</div>
+        <InputError v-if="errorLon" :message="errorLon" />
       </div>
     </div>
   </div>
