@@ -20,6 +20,8 @@ class Destination extends Model
         'facility',
         'lat',
         'lon',
+        'address',
+        'operating_hours',
         'published'
     ];
 

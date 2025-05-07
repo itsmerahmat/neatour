@@ -50,6 +50,10 @@ function renderStars(rating: number) {
                     </div>
                 </div>
                 <div class="space-y-2">
+                    <h3 class="font-medium text-sm">Nama</h3>
+                    <p>{{ testimonial.name || 'Anonymous' }}</p>
+                </div>
+                <div class="space-y-2">
                     <h3 class="font-medium text-sm">Komentar</h3>
                     <p>{{ testimonial.comment }}</p>
                 </div>

@@ -86,6 +86,7 @@ const showReviewModal = ref(false);
 // Review form
 const reviewForm = useForm({
     destination_id: destinationData.value.id,
+    name: '',
     rating: 0,
     comment: '',
 });
@@ -147,13 +148,13 @@ onMounted(() => {
                             <!-- Opening Hours -->
                             <div class="flex items-center gap-2 md:gap-3">
                                 <img src="/images/icons/clock.svg" alt="Clock" class="w-5 h-5 md:w-6 md:h-6" />
-                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ "Buka Pukul 05.00 - 16.00" }}</span>
+                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ destinationData.operating_hours || "Buka Pukul 05.00 - 16.00" }}</span>
                             </div>
 
                             <!-- Address -->
                             <div class="flex items-center gap-2 md:gap-3">
                                 <img src="/images/icons/location.svg" alt="Location" class="w-5 h-5 md:w-6 md:h-6" />
-                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ "Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661" }}</span>
+                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ destinationData.address || "Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661" }}</span>
                             </div>
                         </div>
                     </div>
@@ -218,7 +219,7 @@ onMounted(() => {
                                 <img :src="'https://i.pravatar.cc/150'" alt="User" class="w-full h-full object-cover" />
                             </div>
                             <div class="flex flex-col">
-                                <span class="text-base md:text-lg lg:text-xl font-semibold">{{ "User" }}</span>
+                                <span class="text-base md:text-lg lg:text-xl font-semibold">{{ testimonial.name || "Anonymous" }}</span>
                                 <div class="flex items-center gap-1.5">
                                     <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-3.5 h-3.5 md:w-4 md:h-4" />
                                     <span class="text-sm md:text-base font-semibold text-[#DF6D2D]">{{ testimonial.rating }}/5</span>
@@ -245,6 +246,19 @@ onMounted(() => {
                     </div>
                     
                     <form @submit.prevent="submitReview">
+                        <!-- Name input -->
+                        <div class="mb-6">
+                            <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Nama</label>
+                            <input
+                                id="name"
+                                v-model="reviewForm.name"
+                                type="text"
+                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DF6D2D]"
+                                placeholder="Masukkan nama Anda..."
+                            />
+                            <div v-if="reviewForm.errors.name" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.name }}</div>
+                        </div>
+                        
                         <!-- Rating selection -->
                         <div class="mb-6">
                             <label class="block text-gray-700 text-sm font-semibold mb-2">Rating</label>

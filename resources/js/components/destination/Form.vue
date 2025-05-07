@@ -63,6 +63,8 @@ const form = useForm({
     thumb_image: null as File | null,
     lat: props.destination?.lat || -6.200000, // Default to Indonesia's approximate coordinates
     lon: props.destination?.lon || 106.816666,
+    address: props.destination?.address || '',
+    opening_hours: props.destination?.operating_hours || '',
     pic_id: props.destination?.pic_id ? String(props.destination.pic_id) : '',
     published: props.destination?.published || false,
     categories: props.destination?.categories?.map(category => category.id) || [] as string[],
@@ -209,6 +211,23 @@ const locationData = computed({
                         :errorLat="form.errors.lat"
                         :errorLon="form.errors.lon"
                     />
+
+                    <!-- Location Details -->
+                    <div class="space-y-4">
+                        <h3 class="font-medium text-lg">Detail Lokasi</h3>
+                        
+                        <div class="space-y-2">
+                            <Label for="address">Alamat</Label>
+                            <Textarea id="address" v-model="form.address" rows="2" placeholder="Masukkan alamat lengkap destinasi" />
+                            <div v-if="form.errors.address" class="text-sm text-red-500">{{ form.errors.address }}</div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="opening_hours">Jam Operasional</Label>
+                            <Input id="opening_hours" v-model="form.opening_hours" type="text" placeholder="Contoh: 08:00 - 17:00" />
+                            <div v-if="form.errors.opening_hours" class="text-sm text-red-500">{{ form.errors.opening_hours }}</div>
+                        </div>
+                    </div>
 
                     <!-- Publishing Options -->
                     <div class="space-y-4">
