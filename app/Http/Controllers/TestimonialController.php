@@ -24,10 +24,23 @@ class TestimonialController extends Controller
         // Define allowed sort fields
         $allowedSortFields = ['id', 'destination_id', 'comment', 'rating', 'created_at', 'updated_at'];
         
-        // Process DataTable request with eager loading
+        // Build query with eager loading
+        $query = Testimonial::with('destination');
+        
+        // Filter based on user role
+        $user = auth()->user();
+        if ($user && $user->role !== 'superadmin') {
+            // Regular admin can only see testimonials for their own destinations
+            // Use whereHas to filter by relationship
+            $query->whereHas('destination', function ($q) use ($user) {
+                $q->where('pic_id', $user->id);
+            });
+        }
+        
+        // Process DataTable request
         $result = $this->processDataTable(
             $request,
-            Testimonial::with('destination'),
+            $query,
             $searchableColumns,
             $allowedSortFields,
             'id',
@@ -45,7 +58,14 @@ class TestimonialController extends Controller
      */
     public function create()
     {
-        $destinations = Destination::all(['id', 'name']);
+        // Filter destinations based on user role
+        $user = auth()->user();
+        
+        if ($user->role === 'superadmin') {
+            $destinations = Destination::all(['id', 'name']);
+        } else {
+            $destinations = Destination::where('pic_id', $user->id)->get(['id', 'name']);
+        }
         
         return Inertia::render('testimonial/Create', [
             'destinations' => $destinations
@@ -64,6 +84,15 @@ class TestimonialController extends Controller
             'rating' => 'required|integer|min:1|max:5',
         ]);
 
+        // Verify user has permission for this destination
+        $user = auth()->user();
+        if ($user->role !== 'superadmin') {
+            $destination = Destination::findOrFail($validated['destination_id']);
+            if ($destination->pic_id !== $user->id) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+
         Testimonial::create($validated);
 
         return Redirect::route('katalog.detail', ['id' => $request->destination_id])->with('success', 'Testimonial created successfully.');
@@ -76,6 +105,12 @@ class TestimonialController extends Controller
     {
         $testimonial = Testimonial::with('destination')->findOrFail($id);
         
+        // Verify user has permission to view this testimonial
+        $user = auth()->user();
+        if ($user->role !== 'superadmin' && $testimonial->destination->pic_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+        
         return Inertia::render('testimonial/Show', [
             'testimonial' => $testimonial
         ]);
@@ -86,8 +121,20 @@ class TestimonialController extends Controller
      */
     public function edit(string $id)
     {
-        $testimonial = Testimonial::findOrFail($id);
-        $destinations = Destination::all(['id', 'name']);
+        $testimonial = Testimonial::with('destination')->findOrFail($id);
+        
+        // Verify user has permission to edit this testimonial
+        $user = auth()->user();
+        if ($user->role !== 'superadmin' && $testimonial->destination->pic_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        // Filter destinations based on user role
+        if ($user->role === 'superadmin') {
+            $destinations = Destination::all(['id', 'name']);
+        } else {
+            $destinations = Destination::where('pic_id', $user->id)->get(['id', 'name']);
+        }
         
         return Inertia::render('testimonial/Edit', [
             'testimonial' => $testimonial,
@@ -100,7 +147,13 @@ class TestimonialController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $testimonial = Testimonial::findOrFail($id);
+        $testimonial = Testimonial::with('destination')->findOrFail($id);
+        
+        // Verify user has permission to update this testimonial
+        $user = auth()->user();
+        if ($user->role !== 'superadmin' && $testimonial->destination->pic_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
         
         $validated = $request->validate([
             'destination_id' => 'required|exists:destinations,id',
@@ -108,6 +161,14 @@ class TestimonialController extends Controller
             'comment' => 'required|string|max:255',
             'rating' => 'required|integer|min:1|max:5',
         ]);
+
+        // For non-superadmin, verify they have permission for the selected destination
+        if ($user->role !== 'superadmin') {
+            $destination = Destination::findOrFail($validated['destination_id']);
+            if ($destination->pic_id !== $user->id) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
 
         $testimonial->update($validated);
 
@@ -119,7 +180,14 @@ class TestimonialController extends Controller
      */
     public function destroy(string $id)
     {
-        $testimonial = Testimonial::findOrFail($id);
+        $testimonial = Testimonial::with('destination')->findOrFail($id);
+        
+        // Verify user has permission to delete this testimonial
+        $user = auth()->user();
+        if ($user->role !== 'superadmin' && $testimonial->destination->pic_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+        
         $testimonial->delete();
         
         return Redirect::route('testimonial.index')->with('success', 'Testimonial deleted successfully.');

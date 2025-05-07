@@ -11,8 +11,8 @@ import { MultiSelect, type Option } from '@/components/ui/multi-select';
 import { LocationMap } from '@/components/ui/location-map';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem, type Category, type Destination, type User } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { SharedData, type BreadcrumbItem, type Category, type Destination, type User } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -55,6 +55,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Get auth user information
+const page = usePage<SharedData>();
+const user = computed(() => page.props.auth.user);
+
 // Initialize form with destination data or default values
 const form = useForm({
     name: props.destination?.name || '',
@@ -65,7 +69,7 @@ const form = useForm({
     lon: props.destination?.lon || 106.816666,
     address: props.destination?.address || '',
     opening_hours: props.destination?.operating_hours || '',
-    pic_id: props.destination?.pic_id ? String(props.destination.pic_id) : '',
+    pic_id: props.destination?.pic_id ? String(props.destination.pic_id) : String(user.value.id),
     published: props.destination?.published || false,
     categories: props.destination?.categories?.map(category => category.id) || [] as string[],
     _method: props.isEditing ? 'PUT' : 'POST',
@@ -141,7 +145,7 @@ const locationData = computed({
 
                             <div class="space-y-2">
                                 <Label for="pic_id">Person in Charge (PIC)</Label>
-                                <Select v-model="form.pic_id">
+                                <Select v-model="form.pic_id" :disabled="user.role !== 'superadmin'">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih PIC" />
                                     </SelectTrigger>

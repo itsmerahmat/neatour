@@ -16,11 +16,6 @@ const user = computed(() => page.props.auth.user);
 // Item menu yang selalu ditampilkan
 const baseNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
         title: 'Destination',
         href: '/destination',
         icon: Map,
@@ -35,6 +30,11 @@ const baseNavItems: NavItem[] = [
 // Item menu berdasarkan role
 const roleBasedNavItems: Record<string, NavItem[]> = {
     superadmin: [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
         {
             title: 'User',
             href: '/user',
@@ -51,7 +51,8 @@ const roleBasedNavItems: Record<string, NavItem[]> = {
 // Menggabungkan menu berdasarkan role
 const mainNavItems = computed(() => {
     const role = user.value.role;
-    return [...baseNavItems, ...(roleBasedNavItems[role] || [])];
+    // return [...baseNavItems, ...(roleBasedNavItems[role] || [])];
+    return [...(roleBasedNavItems[role] || []), ...baseNavItems];
 });
 
 const footerNavItems: NavItem[] = [

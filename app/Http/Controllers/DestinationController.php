@@ -25,10 +25,20 @@ class DestinationController extends Controller
         // Define allowed sort fields
         $allowedSortFields = ['id', 'name', 'pic_id', 'published', 'created_at', 'updated_at'];
         
-        // Process DataTable request with eager loading
+        // Build query with eager loading
+        $query = Destination::with(['pic', 'categories']);
+        
+        // Filter based on user role
+        $user = auth()->user();
+        if ($user && $user->role !== 'superadmin') {
+            // Regular admin can only see their own destinations
+            $query = $query->where('pic_id', $user->id);
+        }
+
+        // Process DataTable request
         $result = $this->processDataTable(
             $request,
-            Destination::with(['pic', 'categories']),
+            $query,
             $searchableColumns,
             $allowedSortFields,
             'id',
@@ -47,7 +57,10 @@ class DestinationController extends Controller
     public function create()
     {
         $categories = Category::all();
-        $users = User::all();
+
+        // Only superadmin can select any user as PIC, regular admin must use themselves
+        $user = auth()->user();
+        $users = $user->role === 'superadmin' ? User::all() : User::where('id', $user->id)->get();
         
         return Inertia::render('destination/Create', [
             'categories' => $categories,
@@ -96,6 +109,13 @@ class DestinationController extends Controller
      */
     public function show(Destination $destination)
     {
+
+        // Verify user has permission to view this destination
+        $user = auth()->user();
+        if ($user->role !== 'superadmin' && $destination->pic_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $destination->load(['pic', 'categories']);
         
         return Inertia::render('destination/Show', [
@@ -108,9 +128,17 @@ class DestinationController extends Controller
      */
     public function edit(Destination $destination)
     {
+        // Make sure user can only edit their own destinations unless superadmin
+        $user = auth()->user();
+        if ($user->role !== 'superadmin' && $destination->pic_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $destination->load('categories');
         $categories = Category::all();
-        $users = User::all();
+        
+        // Only superadmin can change the PIC
+        $users = $user->role === 'superadmin' ? User::all() : User::where('id', $user->id)->get();
         
         return Inertia::render('destination/Edit', [
             'destination' => $destination,
@@ -124,6 +152,12 @@ class DestinationController extends Controller
      */
     public function update(Request $request, Destination $destination)
     {
+        // Make sure user can only update their own destinations unless superadmin
+        $user = auth()->user();
+        if ($user->role !== 'superadmin' && $destination->pic_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'content' => 'required|string',
@@ -136,6 +170,11 @@ class DestinationController extends Controller
             'categories' => 'array',
             'categories.*' => 'exists:categories,id'
         ]);
+
+        // For non-superadmin, ensure they can't change pic_id
+        if ($user->role !== 'superadmin') {
+            $validated['pic_id'] = $user->id;
+        }
 
         // Handle image upload
         if ($request->hasFile('thumb_image')) {
@@ -171,6 +210,12 @@ class DestinationController extends Controller
      */
     public function destroy(Destination $destination)
     {
+        // Make sure user can only delete their own destinations unless superadmin
+        $user = auth()->user();
+        if ($user->role !== 'superadmin' && $destination->pic_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+        
         // Delete the image if it exists
         if ($destination->thumb_image) {
             $path = str_replace('/storage/', '', $destination->thumb_image);
