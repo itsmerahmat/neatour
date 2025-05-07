@@ -46,22 +46,10 @@ const dummyDestination = ref({
 const dummyTestimonials = ref([
     {
         id: 1,
-        user: {
-            name: 'Muhammad Ridha Lesmana',
-            avatar: 'https://i.pravatar.cc/150?img=1'
-        },
+        name: 'Budi Santoso',
         rating: 5,
         comment: 'Saya sangat menikmati perjalanan ke Tahura Sultan Adam! Suasananya masih sangat alami dengan udara yang sejuk dan pemandangan hutan yang indah. Saya mengunjungi Menara Pandang Mandiangin, dan dari atas saya bisa melihat hamparan hutan yang luas, benar-benar memanjakan mata. Trekking ke air terjun juga seru, meskipun medannya cukup menantang. Cocok untuk pecinta alam dan fotografi!'
     },
-    {
-        id: 2,
-        user: {
-            name: 'Muhammad Ridha Lesmana',
-            avatar: 'https://i.pravatar.cc/150?img=2'
-        },
-        rating: 5,
-        comment: 'Saya sangat menikmati perjalanan ke Tahura Sultan Adam! Suasananya masih sangat alami dengan udara yang sejuk dan pemandangan hutan yang indah. Saya mengunjungi Menara Pandang Mandiangin, dan dari atas saya bisa melihat hamparan hutan yang luas, benar-benar memanjakan mata. Trekking ke air terjun juga seru, meskipun medannya cukup menantang. Cocok untuk pecinta alam dan fotografi!'
-    }
 ]);
 
 const capitalizeFirstLetter = (str: string) => {

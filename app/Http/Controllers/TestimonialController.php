@@ -59,6 +59,7 @@ class TestimonialController extends Controller
     {
         $validated = $request->validate([
             'destination_id' => 'required|exists:destinations,id',
+            'name' => 'required|string|max:255',
             'comment' => 'required|string|max:255',
             'rating' => 'required|integer|min:1|max:5',
         ]);
@@ -103,6 +104,7 @@ class TestimonialController extends Controller
         
         $validated = $request->validate([
             'destination_id' => 'required|exists:destinations,id',
+            'name' => 'required|string|max:255',
             'comment' => 'required|string|max:255',
             'rating' => 'required|integer|min:1|max:5',
         ]);

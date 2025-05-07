@@ -3,26 +3,22 @@ import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { type NavItem, type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Box, Folder, LayoutGrid, User, Map, Star } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
+// Menggunakan usePage dengan tipe SharedData untuk mendapatkan informasi user yang sedang login
+const page = usePage<SharedData>();
+const user = computed(() => page.props.auth.user);
+
+// Item menu yang selalu ditampilkan
+const baseNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
-    },
-    {
-        title: 'User',
-        href: '/user',
-        icon: User,
-    },
-    {
-        title: 'Category',
-        href: '/category',
-        icon: Box,
     },
     {
         title: 'Destination',
@@ -35,6 +31,28 @@ const mainNavItems: NavItem[] = [
         icon: Star,
     },
 ];
+
+// Item menu berdasarkan role
+const roleBasedNavItems: Record<string, NavItem[]> = {
+    superadmin: [
+        {
+            title: 'User',
+            href: '/user',
+            icon: User,
+        },
+        {
+            title: 'Category',
+            href: '/category',
+            icon: Box,
+        },
+    ],
+};
+
+// Menggabungkan menu berdasarkan role
+const mainNavItems = computed(() => {
+    const role = user.value.role;
+    return [...baseNavItems, ...(roleBasedNavItems[role] || [])];
+});
 
 const footerNavItems: NavItem[] = [
     {

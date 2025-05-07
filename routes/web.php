@@ -16,18 +16,10 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:superadmin'])->group(function () {
     Route::resource('user', UserController::class);
-});
-
-// Destination routes
-Route::resource('destination', DestinationController::class)->middleware(['auth']);
-
-// Testimonial routes
-Route::resource('testimonial', TestimonialController::class)->middleware(['auth']);
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Hanya daftarkan route yang digunakan oleh CategoryController
+    
+    // Category routes dengan pembatasan akses hanya untuk superadmin
     Route::controller(CategoryController::class)->prefix('category')->name('category.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
@@ -35,6 +27,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{category}', 'destroy')->name('destroy');
     });
 });
+
+// Destination routes
+Route::resource('destination', DestinationController::class)->middleware(['auth']);
+
+// Testimonial routes
+Route::resource('testimonial', TestimonialController::class)->middleware(['auth']);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -28,8 +28,9 @@ class UserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
-            'password' => ['nullable', 'string', 'min:8'],
-            // Add other validation rules as needed
+            'password' => $userId ? ['nullable', 'string', 'min:8'] : ['required', 'string', 'min:8'],
+            'role' => ['required', 'string', Rule::in(['admin', 'superadmin'])],
+            'phone_number' => ['nullable', 'string', 'max:20'],
         ];
     }
 }

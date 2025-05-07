@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { User, type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -62,6 +63,8 @@ const columns = [
     { key: 'id', label: 'No', class: 'w-12 text-center', sortable: false },
     { key: 'name', label: 'Nama', sortable: true },
     { key: 'email', label: 'Email', sortable: true },
+    { key: 'role', label: 'Role', sortable: true },
+    { key: 'phone_number', label: 'No. Telepon', sortable: true },
 ];
 
 // Handle delete functionality
@@ -101,11 +104,14 @@ const form = useForm({
     name: '',
     email: '',
     password: '',
+    role: 'admin', // Default to admin
+    phone_number: '',
 });
 
 function openCreateDialog() {
     form.reset();
     form.clearErrors();
+    form.role = 'admin'; // Set default role
     isEditing.value = false;
     selectedUser.value = null;
     isDialogOpen.value = true;
@@ -117,6 +123,8 @@ function openEditDialog(user: User) {
     form.name = user.name;
     form.email = user.email;
     form.password = ''; // Password field should be empty for editing
+    form.role = user.role;
+    form.phone_number = user.phone_number || '';
     isDialogOpen.value = true;
     selectedUser.value = user;
     isEditing.value = true;
@@ -193,10 +201,23 @@ const dialogTitle = computed(() => (isEditing.value ? 'Edit User' : 'Tambah User
                     @row-action="handleRowAction"
                 >
                     <!-- Custom cell rendering for specific columns -->
-                    <template #cell="{ column, index }">
+                    <template #cell="{ column, index, row }">
                         <!-- Custom rendering for ID column -->
                         <template v-if="column.key === 'id'">
                             {{ index + 1 }}
+                        </template>
+                        <!-- Custom rendering for role column to show proper label -->
+                        <template v-else-if="column.key === 'role'">
+                            <span 
+                                :class="[
+                                    'px-2 py-1 rounded text-xs font-medium', 
+                                    row.role === 'superadmin' 
+                                        ? 'bg-purple-100 text-purple-800' 
+                                        : 'bg-blue-100 text-blue-800'
+                                ]"
+                            >
+                                {{ row.role }}
+                            </span>
                         </template>
                     </template>
                     
@@ -255,7 +276,6 @@ const dialogTitle = computed(() => (isEditing.value ? 'Edit User' : 'Tambah User
                         <div v-if="form.errors.email" class="text-sm text-red-500">{{ form.errors.email }}</div>
                     </div>
 
-
                     <div class="space-y-2">
                         <Label for="password">Password</Label>
                         <div class="relative">
@@ -263,7 +283,7 @@ const dialogTitle = computed(() => (isEditing.value ? 'Edit User' : 'Tambah User
                                 id="password" 
                                 v-model="form.password" 
                                 :type="showPassword ? 'text' : 'password'" 
-                                placeholder="Masukkan password user"
+                                :placeholder="isEditing ? 'Biarkan kosong jika tidak ingin mengubah password' : 'Masukkan password user'"
                             />
                             <button 
                                 type="button" 
@@ -276,6 +296,26 @@ const dialogTitle = computed(() => (isEditing.value ? 'Edit User' : 'Tambah User
                             </button>
                         </div>
                         <div v-if="form.errors.password" class="text-sm text-red-500">{{ form.errors.password }}</div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="role">Role</Label>
+                        <Select v-model="form.role">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="superadmin">Superadmin</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <div v-if="form.errors.role" class="text-sm text-red-500">{{ form.errors.role }}</div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="phone_number">Nomor Telepon</Label>
+                        <Input id="phone_number" v-model="form.phone_number" type="text" placeholder="Masukkan nomor telepon" />
+                        <div v-if="form.errors.phone_number" class="text-sm text-red-500">{{ form.errors.phone_number }}</div>
                     </div>
                 </div>
 

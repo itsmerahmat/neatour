@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 
 // Get auth user information
-const page = usePage();
-const authSession: any = computed(() => page.props.auth);
-const isLoggedIn = computed(() => authSession.value.user);
+const page = usePage<SharedData>();
+const user = computed(() => page.props.auth.user);
 
 // Define props for highlighting the active route
 defineProps({
@@ -75,9 +75,9 @@ onBeforeUnmount(() => {
             </nav>
             
             <!-- Desktop Login Button -->
-            <Link :href="isLoggedIn ? '/dashboard' : '/login'" class="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-[#DF6D2D] text-white rounded-full">
+            <Link :href="user ? '/dashboard' : '/login'" class="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-[#DF6D2D] text-white rounded-full">
                 <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4 md:w-5 md:h-5" />
-                <span class="font-medium text-lg xl:text-xl">{{ isLoggedIn ? 'Admin' : 'Login' }}</span>
+                <span class="font-medium text-lg xl:text-xl">{{ user ? 'Admin' : 'Login' }}</span>
             </Link>
         </div>
     </header>
@@ -102,11 +102,11 @@ onBeforeUnmount(() => {
                     ]">
                     Katalog
                 </Link>
-                <Link :href="isLoggedIn ? '/dashboard' : '/login'"
+                <Link :href="user ? '/dashboard' : '/login'"
                     @click="isMenuOpen = false"
                     class="flex items-center gap-1.5 px-3 py-1.5 bg-[#DF6D2D] text-white rounded-full w-fit">
                     <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4" />
-                    <span class="font-medium text-lg">{{ isLoggedIn ? 'Admin' : 'Login' }}</span>
+                    <span class="font-medium text-lg">{{ user ? 'Admin' : 'Login' }}</span>
                 </Link>
             </nav>
         </div>
