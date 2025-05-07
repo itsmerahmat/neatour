@@ -103,7 +103,7 @@ onMounted(() => {
                             dan pengalaman tak terlupakan di satu tempat.
                         </p>
                         <div class="flex flex-wrap gap-2 md:gap-3">
-                            <button class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg bg-[#DF6D2D] text-white rounded-full">
+                            <button class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg bg-primary text-white rounded-full">
                                 Mulai Petualanganmu
                             </button>
                             <Link href="/katalog" class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg border border-white text-white rounded-full">
@@ -203,7 +203,7 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-6 md:mt-8">
-                    <Link href="/katalog" class="flex items-center gap-2 md:gap-3 px-4 py-2 md:py-2.5 bg-[#DF6D2D] text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full">
+                    <Link href="/katalog" class="flex items-center gap-2 md:gap-3 px-4 py-2 md:py-2.5 bg-primary text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full">
                         <span>Lihat Lebih Banyak</span>
                         <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-6 h-6 md:w-7 md:h-7" />
                     </Link>

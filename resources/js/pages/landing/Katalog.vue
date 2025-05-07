@@ -185,7 +185,7 @@ onMounted(() => {
                 <!-- Search Bar Section Based on Figma Design -->
                 <div class="flex flex-row gap-3 mb-6 md:mb-8">
                     <div class="relative flex-1">
-                        <div class="flex items-center border-2 border-[#DF6D2D] rounded-full px-3 py-1.5 md:py-2 lg:py-2.5">
+                        <div class="flex items-center border-2 border-primary rounded-full px-3 py-1.5 md:py-2 lg:py-2.5">
                             <img src="/images/icons/search-icon.svg" alt="Search" class="w-5 h-5 md:w-6 md:h-6" />
                             <input 
                                 v-model="searchQuery"
@@ -198,7 +198,7 @@ onMounted(() => {
                     <div class="relative">
                         <button 
                             @click="toggleFilter"
-                            class="flex items-center justify-center gap-1.5 bg-[#DF6D2D] text-white rounded-full py-1.5 md:py-2 lg:py-2.5 px-3 md:px-6"
+                            class="flex items-center justify-center gap-1.5 bg-primary text-white rounded-full py-1.5 md:py-2 lg:py-2.5 px-3 md:px-6"
                         >
                             <img src="/images/icons/sort.svg" alt="Filter" class="w-5 h-5 md:w-6 md:h-6" />
                             <span class="hidden sm:inline text-base md:text-lg lg:text-xl font-medium">Filter</span>
@@ -212,7 +212,7 @@ onMounted(() => {
                             <div class="mb-2 md:mb-3">
                                 <label class="block text-sm text-[#565950] mb-1">Kategori</label>
                                 <select v-model="selectedCategory" 
-                                    class="w-full p-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#DF6D2D]">
+                                    class="w-full p-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                                     <option value="">Semua Kategori</option>
                                     <option v-for="category in props.categories" :key="category.id" :value="category.id.toString()">
                                         {{ category.name }}
@@ -223,7 +223,7 @@ onMounted(() => {
                             <div class="mb-2 md:mb-3">
                                 <label class="block text-sm text-[#565950] mb-1">Minimal Rating</label>
                                 <select v-model="selectedRating" 
-                                    class="w-full p-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#DF6D2D]">
+                                    class="w-full p-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                                     <option value="">Semua Rating</option>
                                     <option value="5">⭐⭐⭐⭐⭐ (5)</option>
                                     <option value="4">⭐⭐⭐⭐ (4+)</option>
@@ -233,11 +233,11 @@ onMounted(() => {
                             
                             <div class="flex gap-2 mt-3 md:mt-4">
                                 <button @click="clearFilters" 
-                                    class="flex-1 py-1 border border-[#DF6D2D] text-[#DF6D2D] text-sm rounded-full hover:bg-gray-50">
+                                    class="flex-1 py-1 border border-primary text-primary text-sm rounded-full hover:bg-gray-50">
                                     Reset
                                 </button>
                                 <button @click="applyFilters" 
-                                    class="flex-1 py-1 bg-[#DF6D2D] text-white text-sm rounded-full hover:bg-[#c75b21]">
+                                    class="flex-1 py-1 bg-primary text-white text-sm rounded-full hover:bg-primary/90">
                                     Terapkan
                                 </button>
                             </div>
@@ -268,7 +268,7 @@ onMounted(() => {
                     <button
                         v-if="currentPage < props.pagination.lastPage"
                         @click="loadMore"
-                        class="flex items-center gap-2 px-4 py-2 md:py-2.5 bg-[#DF6D2D] text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full"
+                        class="flex items-center gap-2 px-4 py-2 md:py-2.5 bg-primary text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full"
                         :disabled="isLoadingMore"
                     >
                         <span>{{ isLoadingMore ? 'Memuat...' : 'Lihat Lebih Banyak' }}</span>

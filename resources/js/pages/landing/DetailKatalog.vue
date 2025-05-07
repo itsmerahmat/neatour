@@ -126,7 +126,7 @@ onMounted(() => {
                         <div class="flex justify-between items-center">
                             <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold">{{ destinationData.name }}</h1>
                             <div class="flex gap-2">
-                                <button class="p-1.5 md:p-2 bg-[#DF6D2D] rounded-full">
+                                <button class="p-1.5 md:p-2 bg-primary rounded-full">
                                     <img src="/images/icons/export.svg" alt="Share" class="w-4 h-4 md:w-5 md:h-5" />
                                 </button>
                             </div>
@@ -134,7 +134,7 @@ onMounted(() => {
 
                         <div class="flex items-center gap-1.5">
                             <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" />
-                            <span class="text-lg sm:text-xl md:text-2xl font-semibold text-[#DF6D2D]">{{ destinationData.avg_rating }}</span> ({{ destinationData.total_reviews }} Ulasan)
+                            <span class="text-lg sm:text-xl md:text-2xl font-semibold text-primary">{{ destinationData.avg_rating }}</span> ({{ destinationData.total_reviews }} Ulasan)
                         </div>
 
                         <div class="flex flex-col gap-3 md:gap-4 mt-3 md:mt-4">
@@ -197,7 +197,7 @@ onMounted(() => {
             <div class="container lg:max-w-4/5 mx-auto">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-5">
                     <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-3 sm:mb-0">Ulasan Pengguna</h2>
-                    <button @click="showReviewModal = true" class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 bg-[#DF6D2D] text-white rounded-full">
+                    <button @click="showReviewModal = true" class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white rounded-full">
                         <img src="/images/icons/add-circle.svg" alt="Add" class="w-4 h-4 md:w-5 md:h-5" />
                         <span class="text-base md:text-lg font-semibold">Beri Ulasan</span>
                     </button>
@@ -215,7 +215,7 @@ onMounted(() => {
                                 <span class="text-base md:text-lg lg:text-xl font-semibold">{{ testimonial.name || "Anonymous" }}</span>
                                 <div class="flex items-center gap-1.5">
                                     <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-3.5 h-3.5 md:w-4 md:h-4" />
-                                    <span class="text-sm md:text-base font-semibold text-[#DF6D2D]">{{ testimonial.rating }}/5</span>
+                                    <span class="text-sm md:text-base font-semibold text-primary">{{ testimonial.rating }}/5</span>
                                 </div>
                             </div>
                         </div>
@@ -246,7 +246,7 @@ onMounted(() => {
                                 id="name"
                                 v-model="reviewForm.name"
                                 type="text"
-                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DF6D2D]"
+                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                                 placeholder="Masukkan nama Anda..."
                             />
                             <div v-if="reviewForm.errors.name" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.name }}</div>
@@ -279,7 +279,7 @@ onMounted(() => {
                                 id="comment"
                                 v-model="reviewForm.comment"
                                 rows="4"
-                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DF6D2D]"
+                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                                 placeholder="Bagikan pengalaman Anda..."
                             ></textarea>
                             <div v-if="reviewForm.errors.comment" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.comment }}</div>
@@ -290,7 +290,7 @@ onMounted(() => {
                             <button
                                 type="submit"
                                 :disabled="reviewForm.processing"
-                                class="px-4 py-2 bg-[#DF6D2D] text-white rounded-full font-semibold hover:bg-[#c95e24] transition disabled:opacity-75"
+                                class="px-4 py-2 bg-primary text-white rounded-full font-semibold hover:bg-primary/90 transition disabled:opacity-75"
                             >
                                 {{ reviewForm.processing ? 'Memproses...' : 'Kirim Ulasan' }}
                             </button>
@@ -320,7 +320,7 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-5 md:mt-7">
-                    <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2 bg-[#DF6D2D] text-white text-base md:text-lg lg:text-xl font-semibold rounded-full">
+                    <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2 bg-primary text-white text-base md:text-lg lg:text-xl font-semibold rounded-full">
                         <span>Lihat Lebih Banyak</span>
                         <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
                     </Link>
