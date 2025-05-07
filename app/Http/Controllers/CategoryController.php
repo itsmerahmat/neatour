@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
+use App\Traits\DataTableTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -11,25 +12,34 @@ use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+    use DataTableTrait;
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::all();
-
+        // Define searchable columns
+        $searchableColumns = ['name'];
+        
+        // Define allowed sort fields
+        $allowedSortFields = ['id', 'name', 'created_at', 'updated_at'];
+        
+        // Process DataTable request
+        $result = $this->processDataTable(
+            $request,
+            Category::query(),
+            $searchableColumns,
+            $allowedSortFields,
+            'id',
+            'desc'
+        );
+        
         return Inertia::render('category/Index', [
-            'categories' => $categories
+            'categories' => $result['data'],
+            'filters' => $result['filters'],
         ]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    // public function create()
-    // {
-    //     return Inertia::render('category/Form');
-    // }
 
     /**
      * Store a newly created resource in storage.
@@ -49,27 +59,6 @@ class CategoryController extends Controller
         return redirect()->route('category.index')
             ->with('success', 'Kategori berhasil ditambahkan');
     }
-
-    /**
-     * Display the specified resource.
-     */
-    // public function show(Category $category)
-    // {
-    //     return Inertia::render('category/Show', [
-    //         'category' => $category
-    //     ]);
-    // }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    // public function edit(Category $category)
-    // {
-    //     return Inertia::render('category/Form', [
-    //         'category' => $category,
-    //         'isEditing' => true
-    //     ]);
-    // }
 
     /**
      * Update the specified resource in storage.
@@ -103,9 +92,17 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
-        // Check if the category has an image and delete it (TODO: not working)
-        if ($category->img && Storage::exists(str_replace('/storage', 'public', $category->img))) {
-            Storage::delete(str_replace('/storage', 'public', $category->img));
+        // Check if the category has an image and delete it
+        if ($category->img) {
+            // Convert the URL path to storage path
+            $path = str_replace('/storage/', 'public/', $category->img);
+            
+            // Check if file exists and delete it
+            if (Storage::exists($path)) {
+                Storage::delete($path);
+            } else {
+                Log::warning("Could not find image to delete: {$category->img}");
+            }
         }
 
         // Delete the category

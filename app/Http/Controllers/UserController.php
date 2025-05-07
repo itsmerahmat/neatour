@@ -4,20 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Traits\DataTableTrait;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    use DataTableTrait;
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
-
+        // Define searchable columns
+        $searchableColumns = ['name', 'email', 'role', 'phone_number'];
+        
+        // Define allowed sort fields
+        $allowedSortFields = ['id', 'name', 'email', 'role', 'phone_number', 'created_at', 'updated_at'];
+        
+        // Process DataTable request
+        $result = $this->processDataTable(
+            $request,
+            User::query(),
+            $searchableColumns,
+            $allowedSortFields,
+            'id',
+            'desc'
+        );
+        
         return Inertia::render('user/Index', [
-            'users' => $users
+            'users' => $result['data'],
+            'filters' => $result['filters'],
         ]);
     }
 

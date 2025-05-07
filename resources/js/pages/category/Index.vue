@@ -11,30 +11,58 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { FileUpload } from '@/components/ui/file-upload';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Category, type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
+// Import the DataTable component
+import { DataTable } from '@/components/datatable';
+
+// Props now include pagination, search, and sorting
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const props = defineProps({
+const props = defineProps<{
     categories: {
-        type: Array as () => Category[],
-        required: true,
-    },
-});
+        current_page: number;
+        data: Category[];
+        from: number;
+        last_page: number;
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
+    };
+    filters: {
+        search: string;
+        perPage: number;
+        sortField: string;
+        sortDirection: string;
+    }
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Category',
         href: '/category',
     },
+];
+
+// Define table columns
+const columns = [
+    { key: 'id', label: 'No', class: 'w-12 text-center', sortable: false },
+    { key: 'name', label: 'Nama', sortable: true },
+    { key: 'img', label: 'Gambar', sortable: false },
 ];
 
 // Handle delete functionality
@@ -54,6 +82,7 @@ function handleDelete() {
                     description: 'Terjadi kesalahan saat menghapus kategori',
                 });
             },
+            preserveScroll: true,
         });
     }
 }
@@ -69,21 +98,6 @@ const form = useForm({
     img: null as File | null,
 });
 
-function handleFileChange(e: Event) {
-    const target = e.target as HTMLInputElement;
-    if (target.files && target.files.length > 0) {
-        const file = target.files[0];
-        form.img = file;
-
-        // Generate image preview
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            imagePreview.value = e.target?.result as string;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
 function openCreateDialog() {
     form.reset();
     form.clearErrors();
@@ -97,7 +111,6 @@ function openEditDialog(category: Category) {
     form.reset();
     form.clearErrors();
     form.name = category.name;
-    // Don't set form.img here since it's now a file input
     isEditing.value = true;
     selectedCategory.value = category;
 
@@ -127,6 +140,7 @@ function handleSubmit() {
                     description: 'Terjadi kesalahan saat memperbarui data kategori',
                 });
             },
+            preserveScroll: true,
         });
     } else {
         form.post('/category', {
@@ -142,7 +156,17 @@ function handleSubmit() {
                     description: 'Terjadi kesalahan saat menambahkan kategori',
                 });
             },
+            preserveScroll: true,
         });
+    }
+}
+
+// Handle row actions from DataTable
+function handleRowAction({ action, row }: { action: string; row: Category }) {
+    if (action === 'edit') {
+        openEditDialog(row);
+    } else if (action === 'delete') {
+        categoryToDelete.value = row.id;
     }
 }
 
@@ -170,54 +194,61 @@ watch(isDialogOpen, (newValue) => {
                 <Button variant="default" @click="openCreateDialog">Tambah Kategori</Button>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>No</TableHead>
-                            <TableHead>Nama</TableHead>
-                            <TableHead>Gambar</TableHead>
-                            <TableHead>Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="(category, index) in categories" :key="category.id">
-                            <TableCell>{{ index + 1 }}</TableCell>
-                            <TableCell>{{ category.name }}</TableCell>
-                            <TableCell>
-                                <img v-if="category.img" :src="category.img" class="h-10 w-10 rounded-md object-cover" alt="Category image" />
-                                <span v-else class="text-gray-400">No image</span>
-                            </TableCell>
-                            <TableCell>
-                                <div class="flex space-x-2">
-                                    <!-- Tombol edit untuk membuka dialog edit -->
-                                    <Button variant="outline" size="sm" @click="openEditDialog(category)">Edit</Button>
+                <!-- Use the DataTable component -->
+                <DataTable
+                    route="/category"
+                    :data="categories"
+                    :columns="columns"
+                    :filters="filters"
+                    :searchable=true
+                    search-placeholder="Cari kategori..."
+                    @row-action="handleRowAction"
+                >
+                    <!-- Custom cell rendering for specific columns -->
+                    <template #cell="{ column, row, index }">
+                        <!-- Custom rendering for ID column -->
+                        <template v-if="column.key === 'id'">
+                            {{ (categories?.from || 0) + index }}
+                        </template>
+                        
+                        <!-- Custom rendering for image column -->
+                        <template v-else-if="column.key === 'img'">
+                            <img v-if="row.img" :src="row.img" class="h-10 w-10 rounded-md object-cover" alt="Category image" />
+                            <span v-else class="text-gray-400">No image</span>
+                        </template>
+                    </template>
+                    
+                    <!-- Actions slot for buttons -->
+                    <template #actions="{ row }">
+                        <div class="flex space-x-2">
+                            <!-- Edit button -->
+                            <Button variant="outline" size="sm" @click="openEditDialog(row)">Edit</Button>
 
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm" @click="categoryToDelete = category.id"> Hapus </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Tindakan ini tidak dapat dibatalkan. Ini akan menghapus kategori secara permanen dari database.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel @click="categoryToDelete = null">Batal</AlertDialogCancel>
-                                                <AlertDialogAction @click="handleDelete">Hapus</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+                            <!-- Delete button with confirmation -->
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm" @click="categoryToDelete = row.id">
+                                        Hapus
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Tindakan ini tidak dapat dibatalkan. Ini akan menghapus kategori secara permanen dari database.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel @click="categoryToDelete = null">Batal</AlertDialogCancel>
+                                        <AlertDialogAction @click="handleDelete">Hapus</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </template>
+
+                </DataTable>
             </CardContent>
-            <CardFooter class="flex justify-between">
-                <div class="text-muted-foreground text-sm">Menampilkan {{ categories.length }} kategori</div>
-            </CardFooter>
         </Card>
 
         <!-- Dialog untuk form tambah/edit kategori -->
@@ -237,20 +268,15 @@ watch(isDialogOpen, (newValue) => {
                         <div v-if="form.errors.name" class="text-sm text-red-500">{{ form.errors.name }}</div>
                     </div>
 
-                    <div class="grid w-full items-center gap-2">
+                    <div class="space-y-2">
                         <Label for="img">Gambar Kategori</Label>
-                        <Input id="img" type="file" accept="image/*" @change="handleFileChange" />
-                        <div v-if="form.errors.img" class="text-sm text-red-500">{{ form.errors.img }}</div>
-
-                        <!-- Image Preview -->
-                        <div v-if="imagePreview" class="mt-2">
-                            <p class="text-muted-foreground mb-2 text-sm">Preview:</p>
-                            <div class="flex items-center justify-center">
-                                <div class="relative h-50 w-50 overflow-hidden rounded-md border">
-                                    <img :src="imagePreview" class="h-full w-full object-cover" alt="Preview" />
-                                </div>
-                            </div>
-                        </div>
+                        <FileUpload
+                            v-model="form.img"
+                            :existingPreview="imagePreview"
+                            accept="image/*"
+                            :error="form.errors.img"
+                            helpText="Unggah gambar untuk kategori (format: JPG, JPEG, PNG)"
+                        />
                     </div>
                 </div>
 
