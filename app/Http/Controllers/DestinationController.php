@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Destination;
 use App\Models\User;
 use App\Traits\DataTableTrait;
+use App\Http\Requests\DestinationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -71,20 +72,9 @@ class DestinationController extends Controller
     /**
      * Store a newly created destination in storage.
      */
-    public function store(Request $request)
+    public function store(DestinationRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'content' => 'required|string',
-            'facility' => 'required|string',
-            'lat' => 'required|numeric',
-            'lon' => 'required|numeric',
-            'pic_id' => 'required|exists:users,id',
-            'published' => 'boolean',
-            'thumb_image' => 'nullable|image|max:2048',
-            'categories' => 'array',
-            'categories.*' => 'exists:categories,id'
-        ]);
+        $validated = $request->validated();
 
         // Handle image upload
         if ($request->hasFile('thumb_image')) {
@@ -109,7 +99,6 @@ class DestinationController extends Controller
      */
     public function show(Destination $destination)
     {
-
         // Verify user has permission to view this destination
         $user = auth()->user();
         if ($user->role !== 'superadmin' && $destination->pic_id !== $user->id) {
@@ -150,7 +139,7 @@ class DestinationController extends Controller
     /**
      * Update the specified destination in storage.
      */
-    public function update(Request $request, Destination $destination)
+    public function update(DestinationRequest $request, Destination $destination)
     {
         // Make sure user can only update their own destinations unless superadmin
         $user = auth()->user();
@@ -158,18 +147,7 @@ class DestinationController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'content' => 'required|string',
-            'facility' => 'required|string',
-            'lat' => 'required|numeric',
-            'lon' => 'required|numeric',
-            'pic_id' => 'required|exists:users,id',
-            'published' => 'boolean',
-            'thumb_image' => 'nullable|image|max:2048',
-            'categories' => 'array',
-            'categories.*' => 'exists:categories,id'
-        ]);
+        $validated = $request->validated();
 
         // For non-superadmin, ensure they can't change pic_id
         if ($user->role !== 'superadmin') {

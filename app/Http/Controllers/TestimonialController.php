@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Testimonial;
 use App\Models\Destination;
 use App\Traits\DataTableTrait;
+use App\Http\Requests\TestimonialRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -75,24 +76,11 @@ class TestimonialController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(TestimonialRequest $request)
     {
-        $validated = $request->validate([
-            'destination_id' => 'required|exists:destinations,id',
-            'name' => 'required|string|max:255',
-            'comment' => 'required|string|max:255',
-            'rating' => 'required|integer|min:1|max:5',
-        ]);
-
-        // Verify user has permission for this destination
-        $user = auth()->user();
-        if ($user->role !== 'superadmin') {
-            $destination = Destination::findOrFail($validated['destination_id']);
-            if ($destination->pic_id !== $user->id) {
-                abort(403, 'Unauthorized action.');
-            }
-        }
-
+        // Validation and authorization are handled by TestimonialRequest
+        $validated = $request->validated();
+        
         Testimonial::create($validated);
 
         return Redirect::route('katalog.detail', ['id' => $request->destination_id])->with('success', 'Testimonial created successfully.');
@@ -145,31 +133,12 @@ class TestimonialController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(TestimonialRequest $request, string $id)
     {
-        $testimonial = Testimonial::with('destination')->findOrFail($id);
+        // Validation and authorization are handled by TestimonialRequest
+        $testimonial = Testimonial::findOrFail($id);
         
-        // Verify user has permission to update this testimonial
-        $user = auth()->user();
-        if ($user->role !== 'superadmin' && $testimonial->destination->pic_id !== $user->id) {
-            abort(403, 'Unauthorized action.');
-        }
-        
-        $validated = $request->validate([
-            'destination_id' => 'required|exists:destinations,id',
-            'name' => 'required|string|max:255',
-            'comment' => 'required|string|max:255',
-            'rating' => 'required|integer|min:1|max:5',
-        ]);
-
-        // For non-superadmin, verify they have permission for the selected destination
-        if ($user->role !== 'superadmin') {
-            $destination = Destination::findOrFail($validated['destination_id']);
-            if ($destination->pic_id !== $user->id) {
-                abort(403, 'Unauthorized action.');
-            }
-        }
-
+        $validated = $request->validated();
         $testimonial->update($validated);
 
         return Redirect::route('testimonial.index')->with('success', 'Testimonial updated successfully.');
