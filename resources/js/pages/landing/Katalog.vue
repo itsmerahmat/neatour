@@ -4,7 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import Footer from '@/components/landing/Footer.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useLocation } from '@/composables/useLocation';
 
 // Define props for data passed from the controller
@@ -41,7 +41,12 @@ const props = defineProps({
 });
 
 // Use the location composable
-const { getUserLocation } = useLocation();
+const { getUserLocation, locationStatus } = useLocation();
+
+// Computed property to determine if address should be shown instead of distance
+const shouldShowAddress = computed(() => {
+    return locationStatus.value === 'denied' || locationStatus.value === 'unsupported';
+});
 
 // Search functionality
 const searchQuery = ref(props.filters.searchQuery || '');
@@ -249,6 +254,8 @@ onMounted(() => {
                         :thumbImage="destination.thumb_image"
                         :rating="destination.avg_rating || 0"
                         :distance="destination.distance ? `${destination.distance} Km` : '-'"
+                        :address="destination.address || ''"
+                        :showAddress="shouldShowAddress"
                     />
                 </div>
                 

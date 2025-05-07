@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Destination } from '@/types';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import Footer from '@/components/landing/Footer.vue';
@@ -22,7 +22,12 @@ const props = defineProps({
 });
 
 // Use the location composable
-const { getUserLocation } = useLocation();
+const { getUserLocation, locationStatus } = useLocation();
+
+// Computed property to determine if address should be shown instead of distance
+const shouldShowAddress = computed(() => {
+    return locationStatus.value === 'denied' || locationStatus.value === 'unsupported';
+});
 
 // Carousel state
 const currentSlide = ref(0);
@@ -179,7 +184,7 @@ onMounted(() => {
             <div class="container lg:max-w-4/5 mx-auto">
                 <div class="text-center mb-6 md:mb-8 lg:mb-10">
                     <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-[#33372C]">
-                        Temukan Wisata Terdekat !
+                        Temukan Wisata {{ shouldShowAddress ? 'Terbaik' : 'Terdekat' }}!
                     </h2>
                 </div>
 
@@ -192,6 +197,8 @@ onMounted(() => {
                         :thumbImage="destination.thumb_image"
                         :rating="destination.avg_rating || 0"
                         :distance="destination.distance ? `${destination.distance} Km` : ' - '"
+                        :address="destination.address || ''"
+                        :showAddress="shouldShowAddress"
                     />
                 </div>
 

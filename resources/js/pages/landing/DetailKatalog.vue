@@ -24,7 +24,12 @@ const props = defineProps({
 });
 
 // Use the location composable
-const { getUserLocation } = useLocation();
+const { getUserLocation, locationStatus } = useLocation();
+
+// Computed property to determine if address should be shown instead of distance
+const shouldShowAddress = computed(() => {
+    return locationStatus.value === 'denied' || locationStatus.value === 'unsupported';
+});
 
 // Dummy data for destination details
 const dummyDestination = ref({
@@ -48,7 +53,7 @@ const dummyTestimonials = ref([
         id: 1,
         name: 'Budi Santoso',
         rating: 5,
-        comment: 'Saya sangat menikmati perjalanan ke Tahura Sultan Adam! Suasananya masih sangat alami dengan udara yang sejuk dan pemandangan hutan yang indah. Saya mengunjungi Menara Pandang Mandiangin, dan dari atas saya bisa melihat hamparan hutan yang luas, benar-benar memanjakan mata. Trekking ke air terjun juga seru, meskipun medannya cukup menantang. Cocok untuk pecinta alam dan fotografi!'
+        comment: 'Saya sangat menikmati perjalanan kesini! Suasananya masih sangat alami dengan udara yang sejuk dan pemandangan hutan yang indah. Saya mengunjungi Menara Pandang Mandiangin, dan dari atas saya bisa melihat hamparan hutan yang luas, benar-benar memanjakan mata. Trekking ke air terjun juga seru, meskipun medannya cukup menantang. Cocok untuk pecinta alam dan fotografi!',
     },
 ]);
 
@@ -309,6 +314,8 @@ onMounted(() => {
                         :thumbImage="destination.thumb_image"
                         :rating="destination.avg_rating || 0"
                         :distance="destination.distance ? `${destination.distance} Km` : '-'"
+                        :address="destination.address || ''"
+                        :showAddress="shouldShowAddress"
                     />
                 </div>
 
