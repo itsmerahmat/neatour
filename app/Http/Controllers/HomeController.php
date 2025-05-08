@@ -217,8 +217,11 @@ class HomeController extends Controller
             $destination->distance = round($distance, 1);
         }
         
-        // Get testimonials for this destination
-        $testimonials = Testimonial::where('destination_id', $id)->get();
+        // Get the 3 most recent testimonials for this destination
+        $testimonials = Testimonial::where('destination_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get();
 
         // Fetch other published destinations (limit 3) with testimonials for rating calculation
         $nearbyDestinations = Destination::where('published', true)

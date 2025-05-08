@@ -16,7 +16,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-3 p-4 bg-[#DF6D2D] rounded-2xl shadow-md hover:shadow-lg hover:scale-102 hover:bg-[#E85A15] transition-all duration-300 ease-in-out cursor-pointer">
+  <div class="flex flex-col items-center gap-3 p-4 bg-primary rounded-2xl shadow-md hover:shadow-lg hover:scale-102 hover:bg-[#E85A15] transition-all duration-300 ease-in-out cursor-pointer">
     <div class="w-12 h-12 flex items-center justify-center">
       <img :src="iconSrc" :alt="title" class="w-full h-full" />
     </div>

@@ -10,6 +10,7 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select';
+import InputError from '@/components/InputError.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, Destination, Testimonial } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -117,9 +118,7 @@ const ratings = [
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                        <div v-if="form.errors.destination_id" class="text-sm text-red-500">
-                            {{ form.errors.destination_id }}
-                        </div>
+                        <InputError :message="form.errors.destination_id" class="mt-2" />
                     </div>
 
                     <div class="space-y-2">
@@ -129,9 +128,7 @@ const ratings = [
                             v-model="form.name"
                             placeholder="Masukkan nama pengulas"
                         />
-                        <div v-if="form.errors.name" class="text-sm text-red-500">
-                            {{ form.errors.name }}
-                        </div>
+                        <InputError :message="form.errors.name" class="mt-2" />
                     </div>
 
                     <div class="space-y-2">
@@ -150,9 +147,7 @@ const ratings = [
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                        <div v-if="form.errors.rating" class="text-sm text-red-500">
-                            {{ form.errors.rating }}
-                        </div>
+                        <InputError :message="form.errors.rating" class="mt-2" />
                     </div>
 
                     <div class="space-y-2">
@@ -162,9 +157,7 @@ const ratings = [
                             v-model="form.comment"
                             placeholder="Masukkan komentar testimonial"
                         />
-                        <div v-if="form.errors.comment" class="text-sm text-red-500">
-                            {{ form.errors.comment }}
-                        </div>
+                        <InputError :message="form.errors.comment" class="mt-2" />
                     </div>
                 </CardContent>
                 <CardFooter class="mt-5 flex justify-end space-x-2">

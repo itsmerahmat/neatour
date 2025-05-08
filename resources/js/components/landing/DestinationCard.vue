@@ -21,6 +21,14 @@ defineProps({
   distance: {
     type: String,
     default: "5 Km"
+  },
+  address: {
+    type: String,
+    default: ""
+  },
+  showAddress: {
+    type: Boolean,
+    default: false
   }
 });
 </script>
@@ -41,10 +49,10 @@ defineProps({
         <span class="text-xl font-semibold text-white">{{ rating }}</span>
       </div>
     </div>
-    <h3 class="text-xl font-semibold p-3 text-[#33372C] group-hover:text-[#DF6D2D]">{{ name }}</h3>
+    <h3 class="text-xl font-semibold p-3 text-gray-800 group-hover:text-primary">{{ name }}</h3>
     <div class="flex items-center gap-2 px-3 pb-3">
       <img src="/images/icons/location-primary.svg" alt="Location" class="w-5 h-5" />
-      <span class="text-lg text-[#565950]">{{ distance }}</span>
+      <span class="text-lg text-gray-600 line-clamp-1">{{ showAddress && address ? address : distance }}</span>
     </div>
   </Link>
 </template>

@@ -11,7 +11,26 @@ class DestinationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = auth()->user();
+        
+        // Superadmin can do anything
+        if ($user && $user->role === 'superadmin') {
+            return true;
+        }
+        
+        // For update/edit actions, check if the user owns the destination
+        $destination = $this->route('destination');
+        if ($destination && $user && $destination->pic_id === $user->id) {
+            return true;
+        }
+        
+        // For create actions, set the pic_id to the current user if not superadmin
+        if ($this->isMethod('POST') && $user) {
+            $this->merge(['pic_id' => $user->id]);
+            return true;
+        }
+        
+        return false;
     }
 
     /**
@@ -27,13 +46,15 @@ class DestinationRequest extends FormRequest
             'facility' => 'required|string',
             'lat' => 'required|numeric',
             'lon' => 'required|numeric',
+            'address' => 'nullable|string',
+            'operating_hours' => 'nullable|string',
             'pic_id' => 'required|exists:users,id',
             'published' => 'boolean',
-            'categories' => 'array',
+            'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
             'thumb_image' => $this->isMethod('PUT') || $this->isMethod('PATCH') 
-                ? 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-                : 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                ? 'nullable|image|max:2048'
+                : 'required|image|max:2048',
         ];
     }
 }
