@@ -83,6 +83,12 @@ class TestimonialController extends Controller
         
         Testimonial::create($validated);
 
+        // cek jika user login maka redirect ke halaman testimonial
+        // jika tidak maka redirect ke halaman detail katalog
+        if (auth()->user()) {
+            return Redirect::route('testimonial.index')->with('success', 'Testimonial created successfully.');
+        }
+
         return Redirect::route('katalog.detail', ['id' => $request->destination_id])->with('success', 'Testimonial created successfully.');
     }
 

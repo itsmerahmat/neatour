@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { Destination, Testimonial } from '@/types';
 import { ref, computed, onMounted } from 'vue';
-import { Link, Head, useForm } from '@inertiajs/vue3';
+import { Link, Head } from '@inertiajs/vue3';
 import Footer from '@/components/landing/Footer.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
+import ReviewCard from '@/components/landing/ReviewCard.vue';
+import ReviewForm from '@/components/landing/ReviewForm.vue';
 import { useLocation } from '@/composables/useLocation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import InputError from '@/components/InputError.vue';
 
 // Define props for data passed from the controller
 const props = defineProps({
@@ -81,25 +78,6 @@ const facilities = computed(() => {
 
 // Modal state
 const showReviewModal = ref(false);
-
-// Review form
-const reviewForm = useForm({
-    destination_id: destinationData.value.id,
-    name: '',
-    rating: 0,
-    comment: '',
-});
-
-// Submit review
-const submitReview = () => {
-    reviewForm.post('/testimonial', {
-        preserveScroll: true,
-        onSuccess: () => {
-            showReviewModal.value = false;
-            reviewForm.reset();
-        }
-    });
-};
 
 onMounted(() => {
     // Request user location on page load
@@ -215,93 +193,23 @@ onMounted(() => {
 
                 <!-- Reviews List -->
                 <div class="flex flex-col gap-3 md:gap-4">
-                    <div v-for="testimonial in testimonialsList" :key="testimonial.id" 
-                        class="p-3 md:p-4 rounded-2xl bg-white shadow-md">
-                        <div class="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
-                            <div class="w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full overflow-hidden">
-                                <img :src="'https://i.pravatar.cc/150'" alt="User" class="w-full h-full object-cover" />
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-base md:text-lg lg:text-xl font-semibold">{{ testimonial.name || "Anonymous" }}</span>
-                                <div class="flex items-center gap-1.5">
-                                    <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-3.5 h-3.5 md:w-4 md:h-4" />
-                                    <span class="text-sm md:text-base font-semibold text-primary">{{ testimonial.rating }}/5</span>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-sm md:text-base lg:text-lg text-gray-600">{{ testimonial.comment }}</p>
-                    </div>
+                    <ReviewCard 
+                        v-for="testimonial in testimonialsList" 
+                        :key="testimonial.id"
+                        :id="testimonial.id"
+                        :name="testimonial.name || 'Anonymous'"
+                        :rating="testimonial.rating"
+                        :comment="testimonial.comment"
+                    />
                 </div>
             </div>
         </section>
 
-        <!-- Review Dialog -->
-        <Dialog v-model:open="showReviewModal">
-            <DialogContent class="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Beri Ulasan</DialogTitle>
-                    <DialogDescription>
-                        Bagikan pengalaman Anda dengan destinasi wisata ini
-                    </DialogDescription>
-                </DialogHeader>
-                
-                <form @submit.prevent="submitReview">
-                    <!-- Name input -->
-                    <div class="space-y-2 mb-4">
-                        <Label for="name">Nama</Label>
-                        <Input
-                            id="name"
-                            v-model="reviewForm.name"
-                            type="text"
-                            placeholder="Masukkan nama Anda..."
-                        />
-                        <InputError :message="reviewForm.errors.name" />
-                    </div>
-                    
-                    <!-- Rating selection -->
-                    <div class="space-y-2 mb-4">
-                        <Label>Rating</Label>
-                        <div class="flex gap-2">
-                            <button 
-                                v-for="star in 5" 
-                                :key="star" 
-                                type="button"
-                                @click="reviewForm.rating = star" 
-                                class="focus:outline-none">
-                                <img 
-                                    :src="reviewForm.rating >= star ? '/images/icons/medal-star-primary.svg' : '/images/icons/medal-star-invert.svg'" 
-                                    alt="star" 
-                                    class="w-6 h-6"
-                                >
-                            </button>
-                        </div>
-                        <InputError :message="reviewForm.errors.rating" />
-                    </div>
-                    
-                    <!-- Comment input -->
-                    <div class="space-y-2 mb-6">
-                        <Label for="comment">Komentar</Label>
-                        <Textarea
-                            id="comment"
-                            v-model="reviewForm.comment"
-                            rows="4"
-                            placeholder="Bagikan pengalaman Anda..."
-                        />
-                        <InputError :message="reviewForm.errors.comment" />
-                    </div>
-                    
-                    <DialogFooter>
-                        <Button type="button" variant="outline" @click="showReviewModal = false">Batal</Button>
-                        <Button
-                            type="submit"
-                            :disabled="reviewForm.processing"
-                        >
-                            {{ reviewForm.processing ? 'Memproses...' : 'Kirim Ulasan' }}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <!-- Review Form Component -->
+        <ReviewForm 
+            v-model:open="showReviewModal"
+            :destinationId="Number(destinationData.id)"
+        />
 
         <!-- Recommended Destinations Section -->
         <section class="py-6 md:py-8 lg:py-10 px-4 md:px-6">

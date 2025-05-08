@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { BookOpen, Box, Folder, LayoutGrid, User, Map, Star } from 'lucide-vue-next';
+import { BookOpen, Box, Folder, LayoutGrid, User, Map, Star, Github } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
@@ -59,14 +59,14 @@ const mainNavItems = computed(() => {
 const footerNavItems: NavItem[] = [
     {
         title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
+        href: 'https://github.com/itsmerahmat/neatour',
+        icon: Github,
     },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits',
+    //     icon: BookOpen,
+    // },
 ];
 </script>
 
@@ -76,7 +76,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('dashboard')">
+                        <Link :href="route('home')">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
