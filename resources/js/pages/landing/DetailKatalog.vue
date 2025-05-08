@@ -6,6 +6,12 @@ import Footer from '@/components/landing/Footer.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
 import { useLocation } from '@/composables/useLocation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import InputError from '@/components/InputError.vue';
 
 // Define props for data passed from the controller
 const props = defineProps({
@@ -126,9 +132,9 @@ onMounted(() => {
                         <div class="flex justify-between items-center">
                             <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold">{{ destinationData.name }}</h1>
                             <div class="flex gap-2">
-                                <button class="p-1.5 md:p-2 bg-primary rounded-full">
+                                <Button variant="landing" class="p-1.5 md:p-2">
                                     <img src="/images/icons/export.svg" alt="Share" class="w-4 h-4 md:w-5 md:h-5" />
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
@@ -197,10 +203,14 @@ onMounted(() => {
             <div class="container lg:max-w-4/5 mx-auto">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-5">
                     <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-3 sm:mb-0">Ulasan Pengguna</h2>
-                    <button @click="showReviewModal = true" class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white rounded-full">
+                    <Button 
+                        @click="showReviewModal = true" 
+                        variant="landing"
+                        class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2"
+                    >
                         <img src="/images/icons/add-circle.svg" alt="Add" class="w-4 h-4 md:w-5 md:h-5" />
-                        <span class="text-base md:text-lg font-semibold">Beri Ulasan</span>
-                    </button>
+                        <span class="text-base md:text-lg">Beri Ulasan</span>
+                    </Button>
                 </div>
 
                 <!-- Reviews List -->
@@ -225,80 +235,73 @@ onMounted(() => {
             </div>
         </section>
 
-        <!-- Review Modal -->
-        <transition name="fade">
-            <div v-if="showReviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl" @click.stop>
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-semibold text-[#33372C]">Beri Ulasan</h3>
-                        <button @click="showReviewModal = false" class="text-gray-500 hover:text-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+        <!-- Review Dialog -->
+        <Dialog v-model:open="showReviewModal">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Beri Ulasan</DialogTitle>
+                    <DialogDescription>
+                        Bagikan pengalaman Anda dengan destinasi wisata ini
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <form @submit.prevent="submitReview">
+                    <!-- Name input -->
+                    <div class="space-y-2 mb-4">
+                        <Label for="name">Nama</Label>
+                        <Input
+                            id="name"
+                            v-model="reviewForm.name"
+                            type="text"
+                            placeholder="Masukkan nama Anda..."
+                        />
+                        <InputError :message="reviewForm.errors.name" />
                     </div>
                     
-                    <form @submit.prevent="submitReview">
-                        <!-- Name input -->
-                        <div class="mb-6">
-                            <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Nama</label>
-                            <input
-                                id="name"
-                                v-model="reviewForm.name"
-                                type="text"
-                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="Masukkan nama Anda..."
-                            />
-                            <div v-if="reviewForm.errors.name" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.name }}</div>
-                        </div>
-                        
-                        <!-- Rating selection -->
-                        <div class="mb-6">
-                            <label class="block text-gray-700 text-sm font-semibold mb-2">Rating</label>
-                            <div class="flex gap-2">
-                                <button 
-                                    v-for="star in 5" 
-                                    :key="star" 
-                                    type="button"
-                                    @click="reviewForm.rating = star" 
-                                    class="focus:outline-none">
-                                    <img 
-                                        :src="reviewForm.rating >= star ? '/images/icons/medal-star-primary.svg' : '/images/icons/medal-star-invert.svg'" 
-                                        alt="star" 
-                                        class="w-6 h-6"
-                                    >
-                                </button>
-                            </div>
-                            <div v-if="reviewForm.errors.rating" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.rating }}</div>
-                        </div>
-                        
-                        <!-- Comment input -->
-                        <div class="mb-6">
-                            <label for="comment" class="block text-gray-700 text-sm font-semibold mb-2">Komentar</label>
-                            <textarea
-                                id="comment"
-                                v-model="reviewForm.comment"
-                                rows="4"
-                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="Bagikan pengalaman Anda..."
-                            ></textarea>
-                            <div v-if="reviewForm.errors.comment" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.comment }}</div>
-                        </div>
-                        
-                        <!-- Submit button -->
-                        <div class="flex justify-end">
-                            <button
-                                type="submit"
-                                :disabled="reviewForm.processing"
-                                class="px-4 py-2 bg-primary text-white rounded-full font-semibold hover:bg-primary/90 transition disabled:opacity-75"
-                            >
-                                {{ reviewForm.processing ? 'Memproses...' : 'Kirim Ulasan' }}
+                    <!-- Rating selection -->
+                    <div class="space-y-2 mb-4">
+                        <Label>Rating</Label>
+                        <div class="flex gap-2">
+                            <button 
+                                v-for="star in 5" 
+                                :key="star" 
+                                type="button"
+                                @click="reviewForm.rating = star" 
+                                class="focus:outline-none">
+                                <img 
+                                    :src="reviewForm.rating >= star ? '/images/icons/medal-star-primary.svg' : '/images/icons/medal-star-invert.svg'" 
+                                    alt="star" 
+                                    class="w-6 h-6"
+                                >
                             </button>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </transition>
+                        <InputError :message="reviewForm.errors.rating" />
+                    </div>
+                    
+                    <!-- Comment input -->
+                    <div class="space-y-2 mb-6">
+                        <Label for="comment">Komentar</Label>
+                        <Textarea
+                            id="comment"
+                            v-model="reviewForm.comment"
+                            rows="4"
+                            placeholder="Bagikan pengalaman Anda..."
+                        />
+                        <InputError :message="reviewForm.errors.comment" />
+                    </div>
+                    
+                    <DialogFooter>
+                        <Button type="button" variant="outline" @click="showReviewModal = false">Batal</Button>
+                        <Button
+                            type="submit"
+                            :disabled="reviewForm.processing"
+                        >
+                            {{ reviewForm.processing ? 'Memproses...' : 'Kirim Ulasan' }}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
 
         <!-- Recommended Destinations Section -->
         <section class="py-6 md:py-8 lg:py-10 px-4 md:px-6">
@@ -320,10 +323,16 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-5 md:mt-7">
-                    <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2 bg-primary text-white text-base md:text-lg lg:text-xl font-semibold rounded-full">
-                        <span>Lihat Lebih Banyak</span>
-                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
-                    </Link>
+                    <Button 
+                        variant="landing" 
+                        as-child 
+                        class="text-base md:text-lg lg:text-xl"
+                    >
+                        <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2">
+                            <span>Lihat Lebih Banyak</span>
+                            <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5" />
+                        </Link>
+                    </Button>
                 </div>
             </div>
         </section>

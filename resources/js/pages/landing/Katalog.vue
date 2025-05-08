@@ -6,6 +6,7 @@ import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
 import { ref, onMounted, watch, computed } from 'vue';
 import { useLocation } from '@/composables/useLocation';
+import { Button } from '@/components/ui/button';
 
 // Define props for data passed from the controller
 const props = defineProps({
@@ -196,13 +197,13 @@ onMounted(() => {
                         </div>
                     </div>
                     <div class="relative">
-                        <button 
+                        <Button 
                             @click="toggleFilter"
-                            class="flex items-center justify-center gap-1.5 bg-primary text-white rounded-full py-1.5 md:py-2 lg:py-2.5 px-3 md:px-6"
+                            variant="landing"
                         >
                             <img src="/images/icons/sort.svg" alt="Filter" class="w-5 h-5 md:w-6 md:h-6" />
                             <span class="hidden sm:inline text-base md:text-lg lg:text-xl font-medium">Filter</span>
-                        </button>
+                        </Button>
                         
                         <!-- Filter Dropdown -->
                         <div v-if="showFilter" 
@@ -232,14 +233,16 @@ onMounted(() => {
                             </div>
                             
                             <div class="flex gap-2 mt-3 md:mt-4">
-                                <button @click="clearFilters" 
-                                    class="flex-1 py-1 border border-primary text-primary text-sm rounded-full hover:bg-gray-50">
+                                <Button @click="clearFilters" 
+                                    variant="outline"
+                                    class="flex-1 border border-primary text-primary text-sm rounded-full">
                                     Reset
-                                </button>
-                                <button @click="applyFilters" 
-                                    class="flex-1 py-1 bg-primary text-white text-sm rounded-full hover:bg-primary/90">
+                                </Button>
+                                <Button @click="applyFilters" 
+                                    variant="landing"
+                                    class="flex-1 text-sm">
                                     Terapkan
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -265,19 +268,20 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-6 md:mt-8">
-                    <button
+                    <Button
                         v-if="currentPage < props.pagination.lastPage"
                         @click="loadMore"
-                        class="flex items-center gap-2 px-4 py-2 md:py-2.5 bg-primary text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full"
+                        variant="landing"
+                        class="flex items-center gap-2 px-4 py-2 md:py-2.5 text-base md:text-xl"
                         :disabled="isLoadingMore"
                     >
                         <span>{{ isLoadingMore ? 'Memuat...' : 'Lihat Lebih Banyak' }}</span>
-                        <img v-if="!isLoadingMore" src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-5 h-5 md:w-6 md:h-6" />
+                        <img v-if="!isLoadingMore" src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5" />
                         <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                    </button>
+                    </Button>
                     <div v-else-if="props.nearbyDestinations.length > 0" class="py-2 md:py-2.5 text-gray-500 text-lg">
                         Semua destinasi telah ditampilkan
                     </div>

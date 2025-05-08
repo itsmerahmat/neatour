@@ -8,6 +8,7 @@ import FeatureCard from '@/components/landing/FeatureCard.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
 import { useLocation } from '@/composables/useLocation';
+import { Button } from '@/components/ui/button';
 
 // Define props for data passed from the controller
 const props = defineProps({
@@ -103,12 +104,14 @@ onMounted(() => {
                             dan pengalaman tak terlupakan di satu tempat.
                         </p>
                         <div class="flex flex-wrap gap-2 md:gap-3">
-                            <button class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg bg-primary text-white rounded-full">
+                            <Button variant="landing" class="text-sm md:text-base lg:text-lg">
                                 Mulai Petualanganmu
-                            </button>
-                            <Link href="/katalog" class="px-3 py-1.5 font-semibold text-sm md:text-base lg:text-lg border border-white text-white rounded-full">
-                                Rekomendasi Wisata
-                            </Link>
+                            </Button>
+                            <Button variant="landing" as-child class="text-sm md:text-base lg:text-lg">
+                                <Link href="/katalog" class="flex items-center justify-center px-3 py-1.5 bg-transparent border border-white text-white">
+                                    Rekomendasi Wisata
+                                </Link>
+                            </Button>
                         </div>
                     </div>
 
@@ -203,10 +206,12 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-6 md:mt-8">
-                    <Link href="/katalog" class="flex items-center gap-2 md:gap-3 px-4 py-2 md:py-2.5 bg-primary text-white text-lg md:text-xl lg:text-2xl font-semibold rounded-full">
-                        <span>Lihat Lebih Banyak</span>
-                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-6 h-6 md:w-7 md:h-7" />
-                    </Link>
+                    <Button variant="landing" as-child class="text-base md:text-xl">
+                        <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2">
+                            Lihat Lebih Banyak
+                            <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5" />
+                        </Link>
+                    </Button>
                 </div>
             </div>
         </section>

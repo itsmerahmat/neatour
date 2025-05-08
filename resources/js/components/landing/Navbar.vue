@@ -2,6 +2,7 @@
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { Button } from '@/components/ui/button';
 
 // Get auth user information
 const page = usePage<SharedData>();
@@ -51,12 +52,12 @@ onBeforeUnmount(() => {
             </Link>
             
             <!-- Mobile Menu Button -->
-            <button @click="toggleMenu" class="lg:hidden flex items-center">
+            <Button @click="toggleMenu" variant="ghost" class="lg:hidden flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path v-if="!isMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-            </button>
+            </Button>
             
             <!-- Desktop Navigation -->
             <nav class="hidden lg:flex gap-4">
@@ -75,9 +76,11 @@ onBeforeUnmount(() => {
             </nav>
             
             <!-- Desktop Login Button -->
-            <Link :href="user ? '/dashboard' : '/login'" class="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-primary text-white rounded-full">
-                <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4 md:w-5 md:h-5" />
-                <span class="font-medium text-lg xl:text-xl">{{ user ? 'Admin' : 'Login' }}</span>
+            <Link :href="user ? '/dashboard' : '/login'" class="hidden lg:flex">
+                <Button variant="landing">
+                    <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4 md:w-5 md:h-5" />
+                    <span class="font-medium text-lg xl:text-xl">{{ user ? 'Admin' : 'Login' }}</span>
+                </Button>
             </Link>
         </div>
     </header>
@@ -103,10 +106,11 @@ onBeforeUnmount(() => {
                     Katalog
                 </Link>
                 <Link :href="user ? '/dashboard' : '/login'"
-                    @click="isMenuOpen = false"
-                    class="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-full w-fit">
-                    <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4" />
-                    <span class="font-medium text-lg">{{ user ? 'Admin' : 'Login' }}</span>
+                    @click="isMenuOpen = false">
+                    <Button variant="landing">
+                        <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4" />
+                        <span class="font-medium text-lg">{{ user ? 'Admin' : 'Login' }}</span>
+                    </Button>
                 </Link>
             </nav>
         </div>
