@@ -61,23 +61,31 @@ onBeforeUnmount(() => {
             
             <!-- Desktop Navigation -->
             <nav class="hidden lg:flex gap-4">
-                <Link href="/" :class="[
-                    'font-medium text-lg xl:text-xl px-3',
-                    activePage === 'home' ? 'font-semibold border-b-2 border-primary text-primary' : ''
-                ]">
-                Beranda
+                <Link href="/">
+                    <Button 
+                        variant="link" 
+                        :class="[
+                            'font-medium text-lg xl:text-xl px-3 text-gray-800',
+                            activePage === 'home' ? 'font-semibold border-primary text-primary underline' : ''
+                        ]">
+                        Beranda
+                    </Button>
                 </Link>
-                <Link href="/katalog" :class="[
-                    'font-medium text-lg xl:text-xl px-3',
-                    activePage === 'catalog' ? 'font-semibold border-b-2 border-primary text-primary' : ''
-                ]">
-                Katalog
+                <Link href="/katalog">
+                    <Button 
+                        variant="link" 
+                        :class="[
+                            'font-medium text-lg xl:text-xl px-3 text-gray-800',
+                            activePage === 'catalog' ? 'font-semibold border-primary text-primary underline' : ''
+                        ]">
+                        Katalog
+                    </Button>
                 </Link>
             </nav>
             
             <!-- Desktop Login Button -->
-            <Link :href="user ? '/dashboard' : '/login'" class="hidden lg:flex">
-                <Button variant="landing">
+            <Link :href="user ? '/destination' : '/login'" class="hidden lg:flex">
+                <Button variant="landing" class="py-5">
                     <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4 md:w-5 md:h-5" />
                     <span class="font-medium text-lg xl:text-xl">{{ user ? 'Admin' : 'Login' }}</span>
                 </Button>
@@ -105,7 +113,7 @@ onBeforeUnmount(() => {
                     ]">
                     Katalog
                 </Link>
-                <Link :href="user ? '/dashboard' : '/login'"
+                <Link :href="user ? '/destination' : '/login'"
                     @click="isMenuOpen = false">
                     <Button variant="landing">
                         <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4" />

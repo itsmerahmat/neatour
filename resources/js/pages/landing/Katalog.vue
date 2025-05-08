@@ -170,7 +170,7 @@ onMounted(() => {
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
 
-    <div class="min-h-screen flex flex-col bg-white text-[#33372C] font-['Poppins']">
+    <div class="min-h-screen flex flex-col bg-white text-gray-800 font-['Poppins']">
         <!-- Navigation Bar -->
         <Navbar activePage="catalog" />
 
@@ -178,13 +178,13 @@ onMounted(() => {
         <section class="py-6 md:py-8 lg:pb-12 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
                 <div class="text-center mb-6 md:mb-8">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-[#33372C]">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-800">
                         Cari Destinasi Wisata
                     </h2>
                 </div>
 
                 <!-- Search Bar Section Based on Figma Design -->
-                <div class="flex flex-row gap-3 mb-6 md:mb-8">
+                <div class="flex flex-row gap-3 mb-6 md:mb-8 items-center">
                     <div class="relative flex-1">
                         <div class="flex items-center border-2 border-primary rounded-full px-3 py-1.5 md:py-2 lg:py-2.5">
                             <img src="/images/icons/search-icon.svg" alt="Search" class="w-5 h-5 md:w-6 md:h-6" />
@@ -198,6 +198,7 @@ onMounted(() => {
                     </div>
                     <div class="relative">
                         <Button 
+                            class="md:py-6"
                             @click="toggleFilter"
                             variant="landing"
                         >
@@ -208,10 +209,10 @@ onMounted(() => {
                         <!-- Filter Dropdown -->
                         <div v-if="showFilter" 
                             class="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg p-3 md:p-4 min-w-[260px] sm:min-w-[280px] md:min-w-[320px] z-10 border border-gray-200">
-                            <h3 class="text-base md:text-lg font-semibold mb-2 md:mb-3 text-[#33372C]">Filter Destinasi</h3>
+                            <h3 class="text-base md:text-lg font-semibold mb-2 md:mb-3 text-gray-800">Filter Destinasi</h3>
                             
                             <div class="mb-2 md:mb-3">
-                                <label class="block text-sm text-[#565950] mb-1">Kategori</label>
+                                <label class="block text-sm text-gray-600 mb-1">Kategori</label>
                                 <select v-model="selectedCategory" 
                                     class="w-full p-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                                     <option value="">Semua Kategori</option>
@@ -222,7 +223,7 @@ onMounted(() => {
                             </div>
                             
                             <div class="mb-2 md:mb-3">
-                                <label class="block text-sm text-[#565950] mb-1">Minimal Rating</label>
+                                <label class="block text-sm text-gray-600 mb-1">Minimal Rating</label>
                                 <select v-model="selectedRating" 
                                     class="w-full p-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                                     <option value="">Semua Rating</option>
@@ -268,20 +269,25 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-6 md:mt-8">
-                    <Button
+                    <Link 
                         v-if="currentPage < props.pagination.lastPage"
-                        @click="loadMore"
-                        variant="landing"
-                        class="flex items-center gap-2 px-4 py-2 md:py-2.5 text-base md:text-xl"
-                        :disabled="isLoadingMore"
+                        href="#"
+                        class="flex"
+                        @click.prevent="loadMore"
                     >
-                        <span>{{ isLoadingMore ? 'Memuat...' : 'Lihat Lebih Banyak' }}</span>
-                        <img v-if="!isLoadingMore" src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5" />
-                        <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </Button>
+                        <Button
+                            variant="landing"
+                            class="flex items-center gap-2 px-4 py-1.5 md:py-6 text-base md:text-xl"
+                            :disabled="isLoadingMore"
+                        >
+                            <span>{{ isLoadingMore ? 'Memuat...' : 'Lihat Lebih Banyak' }}</span>
+                            <img v-if="!isLoadingMore" src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-6 md:h-6" />
+                            <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </Button>
+                    </Link>
                     <div v-else-if="props.nearbyDestinations.length > 0" class="py-2 md:py-2.5 text-gray-500 text-lg">
                         Semua destinasi telah ditampilkan
                     </div>

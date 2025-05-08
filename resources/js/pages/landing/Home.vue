@@ -78,7 +78,7 @@ onMounted(() => {
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
 
-    <div class="min-h-screen flex flex-col bg-white text-[#33372C] font-['Poppins']">
+    <div class="min-h-screen flex flex-col bg-white text-gray-800 font-['Poppins']">
         <!-- Navigation Bar -->
         <Navbar />
 
@@ -145,7 +145,7 @@ onMounted(() => {
         <section class="py-6 md:py-8 lg:pb-12 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
                 <div class="text-center mx-auto mb-6 md:mb-8 lg:mb-10 max-w-4xl">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-2 md:mb-4 text-[#33372C]">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold mb-2 md:mb-4 text-gray-800">
                         Kenapa Harus NeaTour?
                     </h2>
                     <p class="text-base md:text-lg lg:text-xl text-[#898B85]">
@@ -186,7 +186,7 @@ onMounted(() => {
         <section class="py-6 md:py-8 lg:pb-12 px-4 md:px-6">
             <div class="container lg:max-w-4/5 mx-auto">
                 <div class="text-center mb-6 md:mb-8 lg:mb-10">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-[#33372C]">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-gray-800">
                         Temukan Wisata {{ shouldShowAddress ? 'Terbaik' : 'Terdekat' }}!
                     </h2>
                 </div>
@@ -206,12 +206,12 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-6 md:mt-8">
-                    <Button variant="landing" as-child class="text-base md:text-xl">
-                        <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2">
+                    <Link href="/katalog" class="flex">
+                        <Button variant="landing" class="flex items-center gap-2 px-4 py-1.5 md:py-6 text-base md:text-xl">
                             Lihat Lebih Banyak
-                            <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5" />
-                        </Link>
-                    </Button>
+                            <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-6 md:h-6" />
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </section>

@@ -113,7 +113,7 @@ onMounted(() => {
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
 
-    <div class="min-h-screen flex flex-col bg-white text-[#33372C] font-['Poppins']">
+    <div class="min-h-screen flex flex-col bg-white text-gray-800 font-['Poppins']">
         <!-- Navigation Bar -->
         <Navbar activePage="catalog" />
 
@@ -147,13 +147,13 @@ onMounted(() => {
                             <!-- Opening Hours -->
                             <div class="flex items-center gap-2 md:gap-3">
                                 <img src="/images/icons/clock.svg" alt="Clock" class="w-5 h-5 md:w-6 md:h-6" />
-                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ destinationData.operating_hours || "Buka Pukul 05.00 - 16.00" }}</span>
+                                <span class="text-base sm:text-lg md:text-xl text-gray-600">{{ destinationData.operating_hours || "Buka Pukul 05.00 - 16.00" }}</span>
                             </div>
 
                             <!-- Address -->
                             <div class="flex items-center gap-2 md:gap-3">
                                 <img src="/images/icons/location.svg" alt="Location" class="w-5 h-5 md:w-6 md:h-6" />
-                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ destinationData.address || "Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661" }}</span>
+                                <span class="text-base sm:text-lg md:text-xl text-gray-600">{{ destinationData.address || "Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661" }}</span>
                             </div>
                         </div>
                     </div>
@@ -161,7 +161,7 @@ onMounted(() => {
 
                 <!-- Description Section -->
                 <div class="mt-5 md:mt-6">
-                    <div class="text-base sm:text-lg md:text-xl text-[#565950] text-justify" v-html="destinationData.content">
+                    <div class="text-base sm:text-lg md:text-xl text-gray-600 text-justify" v-html="destinationData.content">
                     </div>
                 </div>
             </div>
@@ -191,7 +191,7 @@ onMounted(() => {
                     <div class="grid grid-cols-1 gap-3">
                         <div v-for="(facility, index) in facilities" :key="index" class="flex items-center gap-2">
                             <!-- <img :src="`/images/icons/${getFacilityIcon(facility)}.svg`" alt="Facility" class="w-5 h-5 md:w-6 md:h-6" /> -->
-                            <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ capitalizeFirstLetter(facility) }}</span>
+                            <span class="text-base sm:text-lg md:text-xl text-gray-600">{{ capitalizeFirstLetter(facility) }}</span>
                         </div>
                     </div>
                 </div>
@@ -229,7 +229,7 @@ onMounted(() => {
                                 </div>
                             </div>
                         </div>
-                        <p class="text-sm md:text-base lg:text-lg text-[#565950]">{{ testimonial.comment }}</p>
+                        <p class="text-sm md:text-base lg:text-lg text-gray-600">{{ testimonial.comment }}</p>
                     </div>
                 </div>
             </div>
@@ -323,16 +323,14 @@ onMounted(() => {
                 </div>
 
                 <div class="flex justify-center mt-5 md:mt-7">
-                    <Button 
-                        variant="landing" 
-                        as-child 
-                        class="text-base md:text-lg lg:text-xl"
-                    >
-                        <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2">
+                    <Link href="/katalog" class="flex">
+                        <Button 
+                            variant="landing" 
+                            class="flex items-center gap-2 px-4 py-1.5 md:py-6 text-base md:text-xl">
                             <span>Lihat Lebih Banyak</span>
-                            <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5" />
-                        </Link>
-                    </Button>
+                            <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-6 md:h-6" />
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </section>
@@ -341,15 +339,3 @@ onMounted(() => {
         <Footer />
     </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
