@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { Destination, Testimonial } from '@/types';
 import { ref, computed, onMounted } from 'vue';
-import { Link, Head, useForm } from '@inertiajs/vue3';
+import { Link, Head } from '@inertiajs/vue3';
 import Footer from '@/components/landing/Footer.vue';
 import Navbar from '@/components/landing/Navbar.vue';
 import DestinationCard from '@/components/landing/DestinationCard.vue';
+import ReviewCard from '@/components/landing/ReviewCard.vue';
+import ReviewForm from '@/components/landing/ReviewForm.vue';
 import { useLocation } from '@/composables/useLocation';
+import { Button } from '@/components/ui/button';
 
 // Define props for data passed from the controller
 const props = defineProps({
@@ -24,7 +27,12 @@ const props = defineProps({
 });
 
 // Use the location composable
-const { getUserLocation } = useLocation();
+const { getUserLocation, locationStatus } = useLocation();
+
+// Computed property to determine if address should be shown instead of distance
+const shouldShowAddress = computed(() => {
+    return locationStatus.value === 'denied' || locationStatus.value === 'unsupported';
+});
 
 // Dummy data for destination details
 const dummyDestination = ref({
@@ -48,7 +56,7 @@ const dummyTestimonials = ref([
         id: 1,
         name: 'Budi Santoso',
         rating: 5,
-        comment: 'Saya sangat menikmati perjalanan ke Tahura Sultan Adam! Suasananya masih sangat alami dengan udara yang sejuk dan pemandangan hutan yang indah. Saya mengunjungi Menara Pandang Mandiangin, dan dari atas saya bisa melihat hamparan hutan yang luas, benar-benar memanjakan mata. Trekking ke air terjun juga seru, meskipun medannya cukup menantang. Cocok untuk pecinta alam dan fotografi!'
+        comment: 'Saya sangat menikmati perjalanan kesini! Suasananya masih sangat alami dengan udara yang sejuk dan pemandangan hutan yang indah. Saya mengunjungi Menara Pandang Mandiangin, dan dari atas saya bisa melihat hamparan hutan yang luas, benar-benar memanjakan mata. Trekking ke air terjun juga seru, meskipun medannya cukup menantang. Cocok untuk pecinta alam dan fotografi!',
     },
 ]);
 
@@ -71,25 +79,6 @@ const facilities = computed(() => {
 // Modal state
 const showReviewModal = ref(false);
 
-// Review form
-const reviewForm = useForm({
-    destination_id: destinationData.value.id,
-    name: '',
-    rating: 0,
-    comment: '',
-});
-
-// Submit review
-const submitReview = () => {
-    reviewForm.post('/testimonial', {
-        preserveScroll: true,
-        onSuccess: () => {
-            showReviewModal.value = false;
-            reviewForm.reset();
-        }
-    });
-};
-
 onMounted(() => {
     // Request user location on page load
     getUserLocation(['nearbyDestinations']);
@@ -102,7 +91,7 @@ onMounted(() => {
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     </Head>
 
-    <div class="min-h-screen flex flex-col bg-white text-[#33372C] font-['Poppins']">
+    <div class="min-h-screen flex flex-col bg-white text-gray-800 font-['Poppins']">
         <!-- Navigation Bar -->
         <Navbar activePage="catalog" />
 
@@ -121,28 +110,28 @@ onMounted(() => {
                         <div class="flex justify-between items-center">
                             <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold">{{ destinationData.name }}</h1>
                             <div class="flex gap-2">
-                                <button class="p-1.5 md:p-2 bg-[#DF6D2D] rounded-full">
+                                <Button variant="landing" class="p-1.5 md:p-2">
                                     <img src="/images/icons/export.svg" alt="Share" class="w-4 h-4 md:w-5 md:h-5" />
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-1.5">
                             <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" />
-                            <span class="text-lg sm:text-xl md:text-2xl font-semibold text-[#DF6D2D]">{{ destinationData.avg_rating }}</span> ({{ destinationData.total_reviews }} Ulasan)
+                            <span class="text-lg sm:text-xl md:text-2xl font-semibold text-primary">{{ destinationData.avg_rating }}</span> ({{ destinationData.total_reviews }} Ulasan)
                         </div>
 
                         <div class="flex flex-col gap-3 md:gap-4 mt-3 md:mt-4">
                             <!-- Opening Hours -->
                             <div class="flex items-center gap-2 md:gap-3">
                                 <img src="/images/icons/clock.svg" alt="Clock" class="w-5 h-5 md:w-6 md:h-6" />
-                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ destinationData.operating_hours || "Buka Pukul 05.00 - 16.00" }}</span>
+                                <span class="text-base sm:text-lg md:text-xl text-gray-600">{{ destinationData.operating_hours || "Buka Pukul 05.00 - 16.00" }}</span>
                             </div>
 
                             <!-- Address -->
                             <div class="flex items-center gap-2 md:gap-3">
                                 <img src="/images/icons/location.svg" alt="Location" class="w-5 h-5 md:w-6 md:h-6" />
-                                <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ destinationData.address || "Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661" }}</span>
+                                <span class="text-base sm:text-lg md:text-xl text-gray-600">{{ destinationData.address || "Cempaka, Kec. Cemp., Kota Banjar Baru, Kalimantan Selatan 70661" }}</span>
                             </div>
                         </div>
                     </div>
@@ -150,7 +139,7 @@ onMounted(() => {
 
                 <!-- Description Section -->
                 <div class="mt-5 md:mt-6">
-                    <div class="text-base sm:text-lg md:text-xl text-[#565950] text-justify" v-html="destinationData.content">
+                    <div class="text-base sm:text-lg md:text-xl text-gray-600 text-justify" v-html="destinationData.content">
                     </div>
                 </div>
             </div>
@@ -180,7 +169,7 @@ onMounted(() => {
                     <div class="grid grid-cols-1 gap-3">
                         <div v-for="(facility, index) in facilities" :key="index" class="flex items-center gap-2">
                             <!-- <img :src="`/images/icons/${getFacilityIcon(facility)}.svg`" alt="Facility" class="w-5 h-5 md:w-6 md:h-6" /> -->
-                            <span class="text-base sm:text-lg md:text-xl text-[#565950]">{{ capitalizeFirstLetter(facility) }}</span>
+                            <span class="text-base sm:text-lg md:text-xl text-gray-600">{{ capitalizeFirstLetter(facility) }}</span>
                         </div>
                     </div>
                 </div>
@@ -192,108 +181,35 @@ onMounted(() => {
             <div class="container lg:max-w-4/5 mx-auto">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-5">
                     <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-3 sm:mb-0">Ulasan Pengguna</h2>
-                    <button @click="showReviewModal = true" class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 bg-[#DF6D2D] text-white rounded-full">
+                    <Button 
+                        @click="showReviewModal = true" 
+                        variant="landing"
+                        class="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2"
+                    >
                         <img src="/images/icons/add-circle.svg" alt="Add" class="w-4 h-4 md:w-5 md:h-5" />
-                        <span class="text-base md:text-lg font-semibold">Beri Ulasan</span>
-                    </button>
+                        <span class="text-base md:text-lg">Beri Ulasan</span>
+                    </Button>
                 </div>
 
                 <!-- Reviews List -->
                 <div class="flex flex-col gap-3 md:gap-4">
-                    <div v-for="testimonial in testimonialsList" :key="testimonial.id" 
-                        class="p-3 md:p-4 rounded-2xl bg-white shadow-md">
-                        <div class="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
-                            <div class="w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full overflow-hidden">
-                                <img :src="'https://i.pravatar.cc/150'" alt="User" class="w-full h-full object-cover" />
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="text-base md:text-lg lg:text-xl font-semibold">{{ testimonial.name || "Anonymous" }}</span>
-                                <div class="flex items-center gap-1.5">
-                                    <img src="/images/icons/medal-star-primary.svg" alt="Rating" class="w-3.5 h-3.5 md:w-4 md:h-4" />
-                                    <span class="text-sm md:text-base font-semibold text-[#DF6D2D]">{{ testimonial.rating }}/5</span>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-sm md:text-base lg:text-lg text-[#565950]">{{ testimonial.comment }}</p>
-                    </div>
+                    <ReviewCard 
+                        v-for="testimonial in testimonialsList" 
+                        :key="testimonial.id"
+                        :id="testimonial.id"
+                        :name="testimonial.name || 'Anonymous'"
+                        :rating="testimonial.rating"
+                        :comment="testimonial.comment"
+                    />
                 </div>
             </div>
         </section>
 
-        <!-- Review Modal -->
-        <transition name="fade">
-            <div v-if="showReviewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl" @click.stop>
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-semibold text-[#33372C]">Beri Ulasan</h3>
-                        <button @click="showReviewModal = false" class="text-gray-500 hover:text-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <form @submit.prevent="submitReview">
-                        <!-- Name input -->
-                        <div class="mb-6">
-                            <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Nama</label>
-                            <input
-                                id="name"
-                                v-model="reviewForm.name"
-                                type="text"
-                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DF6D2D]"
-                                placeholder="Masukkan nama Anda..."
-                            />
-                            <div v-if="reviewForm.errors.name" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.name }}</div>
-                        </div>
-                        
-                        <!-- Rating selection -->
-                        <div class="mb-6">
-                            <label class="block text-gray-700 text-sm font-semibold mb-2">Rating</label>
-                            <div class="flex gap-2">
-                                <button 
-                                    v-for="star in 5" 
-                                    :key="star" 
-                                    type="button"
-                                    @click="reviewForm.rating = star" 
-                                    class="focus:outline-none">
-                                    <img 
-                                        :src="reviewForm.rating >= star ? '/images/icons/medal-star-primary.svg' : '/images/icons/medal-star-invert.svg'" 
-                                        alt="star" 
-                                        class="w-6 h-6"
-                                    >
-                                </button>
-                            </div>
-                            <div v-if="reviewForm.errors.rating" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.rating }}</div>
-                        </div>
-                        
-                        <!-- Comment input -->
-                        <div class="mb-6">
-                            <label for="comment" class="block text-gray-700 text-sm font-semibold mb-2">Komentar</label>
-                            <textarea
-                                id="comment"
-                                v-model="reviewForm.comment"
-                                rows="4"
-                                class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#DF6D2D]"
-                                placeholder="Bagikan pengalaman Anda..."
-                            ></textarea>
-                            <div v-if="reviewForm.errors.comment" class="text-red-500 text-xs mt-1">{{ reviewForm.errors.comment }}</div>
-                        </div>
-                        
-                        <!-- Submit button -->
-                        <div class="flex justify-end">
-                            <button
-                                type="submit"
-                                :disabled="reviewForm.processing"
-                                class="px-4 py-2 bg-[#DF6D2D] text-white rounded-full font-semibold hover:bg-[#c95e24] transition disabled:opacity-75"
-                            >
-                                {{ reviewForm.processing ? 'Memproses...' : 'Kirim Ulasan' }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </transition>
+        <!-- Review Form Component -->
+        <ReviewForm 
+            v-model:open="showReviewModal"
+            :destinationId="Number(destinationData.id)"
+        />
 
         <!-- Recommended Destinations Section -->
         <section class="py-6 md:py-8 lg:py-10 px-4 md:px-6">
@@ -309,13 +225,19 @@ onMounted(() => {
                         :thumbImage="destination.thumb_image"
                         :rating="destination.avg_rating || 0"
                         :distance="destination.distance ? `${destination.distance} Km` : '-'"
+                        :address="destination.address || ''"
+                        :showAddress="shouldShowAddress"
                     />
                 </div>
 
                 <div class="flex justify-center mt-5 md:mt-7">
-                    <Link href="/katalog" class="flex items-center gap-2 px-4 py-1.5 md:py-2 bg-[#DF6D2D] text-white text-base md:text-lg lg:text-xl font-semibold rounded-full">
-                        <span>Lihat Lebih Banyak</span>
-                        <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                    <Link href="/katalog" class="flex">
+                        <Button 
+                            variant="landing" 
+                            class="flex items-center gap-2 px-4 py-1.5 md:py-6 text-base md:text-xl">
+                            <span>Lihat Lebih Banyak</span>
+                            <img src="/images/icons/arrow-circle-right-bold.svg" alt="View more" class="w-4 h-4 md:w-6 md:h-6" />
+                        </Button>
                     </Link>
                 </div>
             </div>
@@ -325,15 +247,3 @@ onMounted(() => {
         <Footer />
     </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
