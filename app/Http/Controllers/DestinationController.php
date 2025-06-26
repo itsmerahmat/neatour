@@ -6,13 +6,22 @@ use App\Models\Category;
 use App\Models\Destination;
 use App\Models\User;
 use App\Traits\DataTableTrait;
+use App\Services\ImageKitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class DestinationController extends Controller
 {
     use DataTableTrait;
+    
+    protected ImageKitService $imageKitService;
+
+    public function __construct(ImageKitService $imageKitService)
+    {
+        $this->imageKitService = $imageKitService;
+    }
     
     /**
      * Display a listing of the destinations.
@@ -81,15 +90,40 @@ class DestinationController extends Controller
             'lon' => 'required|numeric',
             'pic_id' => 'required|exists:users,id',
             'published' => 'boolean',
-            'thumb_image' => 'nullable|image|max:2048',
+            'thumb_image' => 'nullable|image|max:10240', // Increased to 10MB for better quality
             'categories' => 'array',
             'categories.*' => 'exists:categories,id'
         ]);
 
         // Handle image upload
         if ($request->hasFile('thumb_image')) {
-            $path = $request->file('thumb_image')->store('destinations', 'public');
-            $validated['thumb_image'] = Storage::url($path);
+            $file = $request->file('thumb_image');
+            $fileName = 'destination_' . time() . '_' . $file->getClientOriginalName();
+            
+            Log::info('Attempting ImageKit upload', [
+                'fileName' => $fileName,
+                'fileSize' => $file->getSize(),
+                'mimeType' => $file->getMimeType()
+            ]);
+            
+            // Upload to ImageKit (ImageKit preserves original quality by default)
+            $uploadResult = $this->imageKitService->uploadFile($file, $fileName, [
+                'folder' => '/destinations',
+                'useUniqueFileName' => true,
+                'tags' => ['destination', 'thumbnail'],
+                'isPrivateFile' => false,
+            ]);
+
+            if ($uploadResult) {
+                Log::info('ImageKit upload successful', ['fileId' => $uploadResult['fileId']]);
+                $validated['thumb_image'] = $uploadResult['url'];
+                $validated['imagekit_file_id'] = $uploadResult['fileId'];
+            } else {
+                Log::error('ImageKit upload failed for destination');
+                return redirect()->back()
+                    ->withErrors(['thumb_image' => 'Gagal mengunggah gambar ke ImageKit'])
+                    ->withInput();
+            }
         }
 
         // Create the destination
@@ -166,7 +200,7 @@ class DestinationController extends Controller
             'lon' => 'required|numeric',
             'pic_id' => 'required|exists:users,id',
             'published' => 'boolean',
-            'thumb_image' => 'nullable|image|max:2048',
+            'thumb_image' => 'nullable|image|max:10240', // Increased to 10MB for better quality
             'categories' => 'array',
             'categories.*' => 'exists:categories,id'
         ]);
@@ -178,16 +212,41 @@ class DestinationController extends Controller
 
         // Handle image upload
         if ($request->hasFile('thumb_image')) {
-            // Delete old image if it exists
-            if ($destination->thumb_image) {
-                $oldPath = str_replace('/storage/', '', $destination->thumb_image);
-                if (Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
-            }
+            $file = $request->file('thumb_image');
+            $fileName = 'destination_' . time() . '_' . $file->getClientOriginalName();
+            
+            Log::info('Attempting ImageKit upload for update', [
+                'fileName' => $fileName,
+                'fileSize' => $file->getSize(),
+                'mimeType' => $file->getMimeType(),
+                'destinationId' => $destination->id
+            ]);
+            
+            // Upload to ImageKit (ImageKit preserves original quality by default)
+            $uploadResult = $this->imageKitService->uploadFile($file, $fileName, [
+                'folder' => '/destinations',
+                'useUniqueFileName' => true,
+                'tags' => ['destination', 'thumbnail'],
+                'isPrivateFile' => false,
+            ]);
 
-            $path = $request->file('thumb_image')->store('destinations', 'public');
-            $validated['thumb_image'] = Storage::url($path);
+            if ($uploadResult) {
+                Log::info('ImageKit upload successful for update', ['fileId' => $uploadResult['fileId']]);
+                
+                // Delete old image from ImageKit if it exists
+                if ($destination->imagekit_file_id) {
+                    Log::info('Deleting old ImageKit file', ['oldFileId' => $destination->imagekit_file_id]);
+                    $this->imageKitService->deleteFile($destination->imagekit_file_id);
+                }
+
+                $validated['thumb_image'] = $uploadResult['url'];
+                $validated['imagekit_file_id'] = $uploadResult['fileId'];
+            } else {
+                Log::error('ImageKit upload failed for update', ['destinationId' => $destination->id]);
+                return redirect()->back()
+                    ->withErrors(['thumb_image' => 'Gagal mengunggah gambar ke ImageKit'])
+                    ->withInput();
+            }
         } else {
             // Don't update the image if no new one was provided
             unset($validated['thumb_image']);
@@ -216,12 +275,9 @@ class DestinationController extends Controller
             abort(403, 'Unauthorized action.');
         }
         
-        // Delete the image if it exists
-        if ($destination->thumb_image) {
-            $path = str_replace('/storage/', '', $destination->thumb_image);
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
+        // Delete the image from ImageKit if it exists
+        if ($destination->imagekit_file_id) {
+            $this->imageKitService->deleteFile($destination->imagekit_file_id);
         }
 
         // Delete related testimonials first to avoid foreign key constraint violations
