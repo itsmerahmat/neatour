@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-defineProps({
+const props = defineProps({
   id: {
     type: [Number, String],
     required: true
@@ -31,6 +32,28 @@ defineProps({
     default: false
   }
 });
+
+// Generate image URL without compression for card display
+const optimizedImage = computed(() => {
+  if (!props.thumbImage) return '/images/placeholder.jpg';
+  
+  // If it's an ImageKit URL, resize without compression
+  if (props.thumbImage.includes('ik.imagekit.io')) {
+    // Extract the path and add transformations
+    try {
+      const url = new URL(props.thumbImage);
+      const path = url.pathname;
+      
+      return `${url.origin}${path}`;
+    } catch (error) {
+      console.warn('Error parsing image URL:', error);
+      return props.thumbImage;
+    }
+  }
+  
+  // For non-ImageKit URLs, return as is
+  return props.thumbImage;
+});
 </script>
 
 <template>
@@ -40,7 +63,7 @@ defineProps({
   >
     <div 
       class="h-52 bg-cover bg-center p-3 flex justify-end rounded-b-xl relative"
-      :style="{ backgroundImage: `url(${thumbImage})` }"
+      :style="{ backgroundImage: `url(${optimizedImage})` }"
     >
       <div
         class="absolute top-3 right-3 flex items-center gap-1 bg-white/20 backdrop-blur-sm px-1.5 py-0.5 rounded-full"

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Destination } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const props = defineProps({
     destination: {
@@ -32,6 +33,27 @@ function formatDate(dateString: string): string {
         year: 'numeric',
     }).format(date);
 }
+
+// Generate hero image URL without compression
+const heroImage = computed(() => {
+    if (!props.destination.thumb_image) return null;
+    
+    // If it's an ImageKit URL, resize without compression
+    if (props.destination.thumb_image.includes('ik.imagekit.io')) {
+        try {
+            const url = new URL(props.destination.thumb_image);
+            const path = url.pathname;
+
+            return `${url.origin}${path}`;
+        } catch (error) {
+            console.warn('Error parsing image URL:', error);
+            return props.destination.thumb_image;
+        }
+    }
+    
+    // For non-ImageKit URLs, return as is
+    return props.destination.thumb_image;
+});
 </script>
 
 <template>
@@ -40,7 +62,10 @@ function formatDate(dateString: string): string {
         <div class="m-4 space-y-6">
             <!-- Header Section with Image -->
             <div class="relative h-60 overflow-hidden rounded-xl lg:h-80">
-                <img v-if="destination.thumb_image" :src="destination.thumb_image" class="h-full w-full object-cover" :alt="destination.name" />
+                <img v-if="heroImage" :src="heroImage" class="h-full w-full object-cover" :alt="destination.name" />
+                <div v-else class="h-full w-full bg-gray-200 flex items-center justify-center">
+                    <span class="text-gray-500">No image available</span>
+                </div>
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div class="absolute bottom-0 left-0 p-6">
                     <h1 class="text-3xl font-bold text-white">{{ destination.name }}</h1>
