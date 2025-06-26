@@ -10,6 +10,7 @@ import { FileUpload } from '@/components/ui/file-upload';
 import { MultiSelect, type Option } from '@/components/ui/multi-select';
 import { LocationMap } from '@/components/ui/location-map';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import InputError from '@/components/InputError.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { SharedData, type BreadcrumbItem, type Category, type Destination, type User } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
@@ -140,7 +141,7 @@ const locationData = computed({
                             <div class="space-y-2">
                                 <Label for="name">Nama Destinasi</Label>
                                 <Input id="name" v-model="form.name" type="text" placeholder="Masukkan nama destinasi" />
-                                <div v-if="form.errors.name" class="text-sm text-red-500">{{ form.errors.name }}</div>
+                                <InputError :message="form.errors.name" />
                             </div>
 
                             <div class="space-y-2">
@@ -155,7 +156,7 @@ const locationData = computed({
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <div v-if="form.errors.pic_id" class="text-sm text-red-500">{{ form.errors.pic_id }}</div>
+                                <InputError :message="form.errors.pic_id" />
                             </div>
                         </div>
 
@@ -205,7 +206,7 @@ const locationData = computed({
                         <div class="space-y-2">
                             <Label for="facility">Fasilitas</Label>
                             <Textarea id="facility" v-model="form.facility" rows="3" placeholder="Masukkan fasilitas yang tersedia" />
-                            <div v-if="form.errors.facility" class="text-sm text-red-500">{{ form.errors.facility }}</div>
+                            <InputError :message="form.errors.facility" />
                         </div>
                     </div>
 
@@ -223,13 +224,13 @@ const locationData = computed({
                         <div class="space-y-2">
                             <Label for="address">Alamat</Label>
                             <Textarea id="address" v-model="form.address" rows="2" placeholder="Masukkan alamat lengkap destinasi" />
-                            <div v-if="form.errors.address" class="text-sm text-red-500">{{ form.errors.address }}</div>
+                            <InputError :message="form.errors.address" />
                         </div>
 
                         <div class="space-y-2">
                             <Label for="opening_hours">Jam Operasional</Label>
                             <Input id="opening_hours" v-model="form.opening_hours" type="text" placeholder="Contoh: 08:00 - 17:00" />
-                            <div v-if="form.errors.opening_hours" class="text-sm text-red-500">{{ form.errors.opening_hours }}</div>
+                            <InputError :message="form.errors.opening_hours" />
                         </div>
                     </div>
 
@@ -240,7 +241,7 @@ const locationData = computed({
                         <div class="flex items-center space-x-2">
                             <Checkbox id="published" v-model="form.published" />
                             <Label for="published">Publikasikan destinasi ini</Label>
-                            <div v-if="form.errors.published" class="text-sm text-red-500">{{ form.errors.published }}</div>
+                            <InputError :message="form.errors.published" />
                         </div>
                     </div>
                 </CardContent>

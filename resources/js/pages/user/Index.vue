@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import InputError from '@/components/InputError.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { User, type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
@@ -267,13 +268,13 @@ const dialogTitle = computed(() => (isEditing.value ? 'Edit User' : 'Tambah User
                     <div class="space-y-2">
                         <Label for="name">Nama User</Label>
                         <Input id="name" v-model="form.name" type="text" placeholder="Masukkan nama user" />
-                        <div v-if="form.errors.name" class="text-sm text-red-500">{{ form.errors.name }}</div>
+                        <InputError :message="form.errors.name" />
                     </div>
 
                     <div class="space-y-2">
                         <Label for="email">Email</Label>
                         <Input id="email" v-model="form.email" type="email" placeholder="Masukkan email user" />
-                        <div v-if="form.errors.email" class="text-sm text-red-500">{{ form.errors.email }}</div>
+                        <InputError :message="form.errors.email" />
                     </div>
 
                     <div class="space-y-2">
@@ -295,7 +296,7 @@ const dialogTitle = computed(() => (isEditing.value ? 'Edit User' : 'Tambah User
                                 <span class="sr-only">{{ showPassword ? 'Sembunyikan password' : 'Tampilkan password' }}</span>
                             </button>
                         </div>
-                        <div v-if="form.errors.password" class="text-sm text-red-500">{{ form.errors.password }}</div>
+                        <InputError :message="form.errors.password" />
                     </div>
 
                     <div class="space-y-2">
@@ -309,13 +310,13 @@ const dialogTitle = computed(() => (isEditing.value ? 'Edit User' : 'Tambah User
                                 <SelectItem value="superadmin">Superadmin</SelectItem>
                             </SelectContent>
                         </Select>
-                        <div v-if="form.errors.role" class="text-sm text-red-500">{{ form.errors.role }}</div>
+                        <InputError :message="form.errors.role" />
                     </div>
 
                     <div class="space-y-2">
                         <Label for="phone_number">Nomor Telepon</Label>
                         <Input id="phone_number" v-model="form.phone_number" type="text" placeholder="Masukkan nomor telepon" />
-                        <div v-if="form.errors.phone_number" class="text-sm text-red-500">{{ form.errors.phone_number }}</div>
+                        <InputError :message="form.errors.phone_number" />
                     </div>
                 </div>
 

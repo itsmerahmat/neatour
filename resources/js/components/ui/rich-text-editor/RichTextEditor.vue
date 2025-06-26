@@ -2,6 +2,7 @@
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import { ref, watch } from 'vue';
+import InputError from '@/components/InputError.vue';
 
 // Define props for the component
 interface RichTextEditorProps {
@@ -65,7 +66,7 @@ watch(() => content.value, (newVal) => {
             'min-h-[150px]',
             error ? 'border-red-500' : 'border-input'
         ]" :style="{ minHeight: minHeight }" />
-        <div v-if="error" class="text-sm text-red-500">{{ error }}</div>
+        <InputError v-if="error" :message="error" />
     </div>
 </template>
 

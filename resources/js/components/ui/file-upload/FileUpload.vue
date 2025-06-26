@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { Input } from '../input';
+import InputError from '@/components/InputError.vue';
 
 interface FileUploadProps {
   modelValue: File | null;
@@ -51,7 +52,8 @@ function handleFileChange(e: Event) {
 <template>
     <Input type="file" :accept="accept" @change="handleFileChange" />
     <p v-if="helpText" class="text-sm text-muted-foreground">{{ helpText }}</p>
-    <div v-if="error" class="text-sm text-red-500">{{ error }}</div>
+    <!-- <div v-if="error" class="text-sm text-red-500">{{ error }}</div> -->
+    <InputError v-if="error" :message="error" />
 
     <!-- Image Preview -->
     <div v-if="localPreview" class="mt-2">

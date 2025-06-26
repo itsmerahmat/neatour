@@ -2,6 +2,7 @@
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { Button } from '@/components/ui/button';
 
 // Get auth user information
 const page = usePage<SharedData>();
@@ -51,33 +52,43 @@ onBeforeUnmount(() => {
             </Link>
             
             <!-- Mobile Menu Button -->
-            <button @click="toggleMenu" class="lg:hidden flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#DF6D2D]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <Button @click="toggleMenu" variant="ghost" class="lg:hidden flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path v-if="!isMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-            </button>
+            </Button>
             
             <!-- Desktop Navigation -->
             <nav class="hidden lg:flex gap-4">
-                <Link href="/" :class="[
-                    'font-medium text-lg xl:text-xl px-3',
-                    activePage === 'home' ? 'font-semibold border-b-2 border-[#DF6D2D] text-[#DF6D2D]' : ''
-                ]">
-                Beranda
+                <Link href="/">
+                    <Button 
+                        variant="link" 
+                        :class="[
+                            'font-medium text-lg xl:text-xl px-3 text-gray-800',
+                            activePage === 'home' ? 'font-semibold border-primary text-primary underline' : ''
+                        ]">
+                        Beranda
+                    </Button>
                 </Link>
-                <Link href="/katalog" :class="[
-                    'font-medium text-lg xl:text-xl px-3',
-                    activePage === 'catalog' ? 'font-semibold border-b-2 border-[#DF6D2D] text-[#DF6D2D]' : ''
-                ]">
-                Katalog
+                <Link href="/katalog">
+                    <Button 
+                        variant="link" 
+                        :class="[
+                            'font-medium text-lg xl:text-xl px-3 text-gray-800',
+                            activePage === 'catalog' ? 'font-semibold border-primary text-primary underline' : ''
+                        ]">
+                        Katalog
+                    </Button>
                 </Link>
             </nav>
             
             <!-- Desktop Login Button -->
-            <Link :href="user ? '/dashboard' : '/login'" class="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-[#DF6D2D] text-white rounded-full">
-                <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4 md:w-5 md:h-5" />
-                <span class="font-medium text-lg xl:text-xl">{{ user ? 'Admin' : 'Login' }}</span>
+            <Link :href="user ? '/destination' : '/login'" class="hidden lg:flex">
+                <Button variant="landing" class="py-5">
+                    <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4 md:w-5 md:h-5" />
+                    <span class="font-medium text-lg xl:text-xl">{{ user ? 'Admin' : 'Login' }}</span>
+                </Button>
             </Link>
         </div>
     </header>
@@ -90,7 +101,7 @@ onBeforeUnmount(() => {
                     @click="isMenuOpen = false"
                     :class="[
                         'font-medium text-lg py-1.5',
-                        activePage === 'home' ? 'text-[#DF6D2D] font-semibold' : ''
+                        activePage === 'home' ? 'text-primary font-semibold' : ''
                     ]">
                     Beranda
                 </Link>
@@ -98,15 +109,16 @@ onBeforeUnmount(() => {
                     @click="isMenuOpen = false"
                     :class="[
                         'font-medium text-lg py-1.5',
-                        activePage === 'catalog' ? 'text-[#DF6D2D] font-semibold' : ''
+                        activePage === 'catalog' ? 'text-primary font-semibold' : ''
                     ]">
                     Katalog
                 </Link>
-                <Link :href="user ? '/dashboard' : '/login'"
-                    @click="isMenuOpen = false"
-                    class="flex items-center gap-1.5 px-3 py-1.5 bg-[#DF6D2D] text-white rounded-full w-fit">
-                    <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4" />
-                    <span class="font-medium text-lg">{{ user ? 'Admin' : 'Login' }}</span>
+                <Link :href="user ? '/destination' : '/login'"
+                    @click="isMenuOpen = false">
+                    <Button variant="landing">
+                        <img src="/images/icons/profile-circle.svg" alt="Profile" class="w-4 h-4" />
+                        <span class="font-medium text-lg">{{ user ? 'Admin' : 'Login' }}</span>
+                    </Button>
                 </Link>
             </nav>
         </div>

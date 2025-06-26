@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import { ChevronDown, X } from 'lucide-vue-next';
 import { ComboboxAnchor, ComboboxContent, ComboboxEmpty, ComboboxGroup, ComboboxInput, ComboboxItem, ComboboxItemIndicator, ComboboxLabel, ComboboxRoot, ComboboxTrigger, ComboboxViewport, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText, TagsInputRoot } from 'reka-ui';
+import InputError from '@/components/InputError.vue';
 
 /**
  * Defines the structure of an option in the MultiSelect component
@@ -161,6 +162,6 @@ const selectedOptions = computed({
         </ComboboxViewport>
       </ComboboxContent>
     </ComboboxRoot>
-    <div v-if="errorMessage" class="text-sm text-destructive mt-1">{{ errorMessage }}</div>
+    <InputError v-if="errorMessage" :message="errorMessage" class="mt-1" />
   </div>
 </template>

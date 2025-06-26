@@ -7,6 +7,7 @@ use App\Models\Destination;
 use App\Models\User;
 use App\Traits\DataTableTrait;
 use App\Services\ImageKitService;
+use App\Http\Requests\DestinationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -143,7 +144,6 @@ class DestinationController extends Controller
      */
     public function show(Destination $destination)
     {
-
         // Verify user has permission to view this destination
         $user = auth()->user();
         if ($user->role !== 'superadmin' && $destination->pic_id !== $user->id) {
