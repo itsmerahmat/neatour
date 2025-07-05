@@ -19,13 +19,20 @@ class TestimonialRequest extends FormRequest
             return true;
         }
         
-        // For create actions, check if user owns the destination
-        $destinationId = $this->input('destination_id');
-        if ($destinationId && $user) {
-            $destination = Destination::find($destinationId);
-            if ($destination && $destination->pic_id === $user->id) {
-                return true;
+        // For POST requests to store testimonials (create new testimonial)
+        if ($this->isMethod('POST') && $this->routeIs('testimonial.store')) {
+            // Allow both authenticated and anonymous users to create testimonials
+            $destinationId = $this->input('destination_id');
+            if ($destinationId) {
+                $destination = Destination::find($destinationId);
+                return $destination !== null; // Allow if destination exists
             }
+            return false;
+        }
+        
+        // For other operations (index, show, edit, update, delete), require authentication
+        if (!$user) {
+            return false;
         }
         
         // For update/edit/delete actions, check if user owns the destination
