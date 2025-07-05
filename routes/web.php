@@ -37,7 +37,18 @@ Route::middleware(['auth', 'verified', 'role:superadmin'])->group(function () {
 Route::resource('destination', DestinationController::class)->middleware(['auth']);
 
 // Testimonial routes
-Route::resource('testimonial', TestimonialController::class)->middleware(['auth']);
+// Allow anonymous users to submit testimonials (reviews)
+Route::post('/testimonial', [TestimonialController::class, 'store'])->name('testimonial.store');
+
+// Protected testimonial routes for authenticated users
+Route::middleware(['auth'])->group(function () {
+    Route::get('/testimonial', [TestimonialController::class, 'index'])->name('testimonial.index');
+    Route::get('/testimonial/create', [TestimonialController::class, 'create'])->name('testimonial.create');
+    Route::get('/testimonial/{testimonial}', [TestimonialController::class, 'show'])->name('testimonial.show');
+    Route::get('/testimonial/{testimonial}/edit', [TestimonialController::class, 'edit'])->name('testimonial.edit');
+    Route::put('/testimonial/{testimonial}', [TestimonialController::class, 'update'])->name('testimonial.update');
+    Route::delete('/testimonial/{testimonial}', [TestimonialController::class, 'destroy'])->name('testimonial.destroy');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
